@@ -36,7 +36,8 @@
         .r-n { background: #9ca3af; } .r-r { background: #3b82f6; } .r-sr { background: #a855f7; } .r-ur { background: #eab308; } .r-lr { background: #ef4444; animation: pulse 2s infinite; }
     </style>
 </head>
-<body class="h-screen w-full overflow-hidden bg-washi flex justify-center items-center">
+<!-- h-[100dvh] にすることでスマホのツールバー等による高さのズレを解消 -->
+<body class="h-[100dvh] w-full overflow-hidden bg-washi flex justify-center items-center">
     <!-- スマホサイズに合わせたメインコンテナ -->
     <div id="app-container" class="w-full h-full max-w-md bg-[#fdfaf1] shadow-2xl relative flex flex-col overflow-hidden border-x-4 border-[#8b5a2b]">
         
@@ -93,7 +94,7 @@
                     いざ、出陣！（開始）
                 </button>
 
-                <div class="flex gap-2 mt-4">
+                <div class="flex gap-2 mt-4 mb-4">
                     <button onclick="showScreen('screen-collection')" class="flex-1 bg-white text-[#8b5a2b] font-bold py-3 rounded-xl border-2 border-[#d4a373] btn-push flex justify-center items-center gap-1">
                         <span>🎁</span> ご褒美図鑑
                     </button>
@@ -105,11 +106,13 @@
         </main>
 
         <!-- 画面2: プレイ画面 -->
-        <main id="screen-play" class="flex-1 flex flex-col p-3 hidden relative h-full w-full">
-            <div id="play-status-bar" class="text-xs font-bold text-gray-500 text-center mb-2">モード: 出来事→年号 / 時代: 古代</div>
+        <!-- overflow-y-auto を追加し、万が一はみ出てもスクロール可能に -->
+        <main id="screen-play" class="flex-1 flex flex-col p-3 hidden relative h-full w-full overflow-y-auto">
+            <div id="play-status-bar" class="text-xs font-bold text-gray-500 text-center mb-2 shrink-0">モード: 出来事→年号 / 時代: 古代</div>
             
             <!-- 問題表示エリア -->
-            <div class="bg-white rounded-xl border-4 border-[#8b5a2b] p-4 flex-1 flex items-center justify-center shadow-md mb-3 relative">
+            <!-- flex-1 と min-h を使って柔軟な高さ配分に変更 -->
+            <div class="bg-white rounded-xl border-4 border-[#8b5a2b] p-4 flex-1 min-h-[100px] flex items-center justify-center shadow-md mb-3 relative shrink-0">
                 <div id="question-text" class="text-xl md:text-2xl font-black text-center text-[#333] leading-relaxed w-full">
                     問題がここに表示されます
                 </div>
@@ -117,17 +120,19 @@
             </div>
 
             <!-- 解答エリア（4択用） -->
-            <div id="answer-select-area" class="h-1/2 min-h-[200px] w-full hidden">
+            <!-- 固定の h-1/2 から flex-1 に変更 -->
+            <div id="answer-select-area" class="flex-1 min-h-[200px] w-full hidden shrink-0">
                 <div id="choices-grid" class="grid grid-cols-2 grid-rows-2 gap-3 h-full pb-2">
                     <!-- ボタンはJSで生成 -->
                 </div>
             </div>
 
             <!-- 解答エリア（テンキー入力用） -->
-            <div id="answer-input-area" class="h-1/2 min-h-[240px] flex flex-col hidden pb-2">
-                <div class="bg-white border-2 border-[#8b5a2b] rounded-xl mb-3 h-16 flex items-center justify-center shadow-inner relative">
+            <!-- 固定の h-1/2 から flex-1 に変更 -->
+            <div id="answer-input-area" class="flex-1 min-h-[240px] flex flex-col hidden pb-2 shrink-0">
+                <div class="bg-white border-2 border-[#8b5a2b] rounded-xl mb-3 h-14 flex items-center justify-center shadow-inner relative shrink-0">
                     <span id="input-display" class="text-4xl font-black tracking-widest text-gray-800"></span>
-                    <span id="input-placeholder" class="text-2xl font-bold text-gray-300 absolute">年号を入力</span>
+                    <span id="input-placeholder" class="text-xl font-bold text-gray-300 absolute">年号を入力</span>
                 </div>
                 <div class="grid grid-cols-3 gap-2 flex-1">
                     <button onclick="inputNum(1)" class="bg-[#fdfaf1] border-2 border-[#d4a373] rounded-lg text-2xl font-bold btn-push text-[#5c3a21]">1</button>
@@ -147,8 +152,8 @@
 
             <!-- 正誤判定＆解説モーダル (画面内に被せる) -->
             <div id="explanation-overlay" class="absolute inset-0 bg-white/95 z-20 flex flex-col p-4 hidden transform transition-transform duration-300 translate-y-full">
-                <div id="judge-mark" class="text-6xl text-center mt-4 mb-2 font-black">⭕️</div>
-                <div id="judge-text" class="text-2xl font-black text-center mb-4 text-[#ef4444]">正解！</div>
+                <div id="judge-mark" class="text-6xl text-center mt-4 mb-2 font-black shrink-0">⭕️</div>
+                <div id="judge-text" class="text-2xl font-black text-center mb-4 text-[#ef4444] shrink-0">正解！</div>
                 
                 <div class="bg-[#fdfaf1] border-2 border-[#8b5a2b] rounded-xl p-4 flex-1 overflow-y-auto mb-4 shadow-inner">
                     <div class="text-center mb-4">
@@ -654,7 +659,8 @@
                 if (!choices.includes(dummy)) choices.push(dummy);
             }
             choices = shuffle(choices);
-            renderChoices(choices, correct, (c) => `${c}年`);
+            // 最後にモード情報を渡してテキストサイズを調整
+            renderChoices(choices, correct, (c) => `${c}年`, 1);
         }
 
         // ダミー出来事生成
@@ -669,16 +675,19 @@
                 else choices.push(DB[Math.floor(Math.random() * DB.length)].e); // 足りない場合は全範囲から
             }
             choices = shuffle(choices);
-            // 文字数が長い場合はCSSで調整
-            renderChoices(choices, correct, (c) => c);
+            // 文字数が長いのでモード情報2を渡す
+            renderChoices(choices, correct, (c) => c, 2);
         }
 
-        function renderChoices(choices, correctAnswer, formatFn) {
+        // 選択肢の描画（modeによって文字サイズを変える）
+        function renderChoices(choices, correctAnswer, formatFn, mode) {
             const grid = document.getElementById('choices-grid');
             grid.innerHTML = '';
             choices.forEach(choice => {
                 const btn = document.createElement('button');
-                btn.className = "bg-[#fdfaf1] border-2 border-[#d4a373] rounded-xl text-gray-800 font-bold p-2 btn-push flex items-center justify-center break-words text-sm md:text-base leading-tight";
+                // モード1（年号のみ）なら文字を大きく、それ以外は普通に
+                const textSizeClass = (mode === 1) ? 'text-2xl md:text-3xl tracking-widest' : 'text-sm md:text-base';
+                btn.className = `bg-[#fdfaf1] border-2 border-[#d4a373] rounded-xl text-gray-800 font-bold p-2 btn-push flex items-center justify-center break-words leading-tight ${textSizeClass}`;
                 btn.innerText = formatFn(choice);
                 btn.onclick = () => checkAnswer(choice === correctAnswer, btn, correctAnswer, formatFn);
                 grid.appendChild(btn);
@@ -753,15 +762,15 @@
             
             if(isCorrect) {
                 mark.innerText = "⭕️";
-                mark.className = "text-6xl text-center mt-4 mb-1 font-black text-[#ef4444] animate-bounce";
+                mark.className = "text-6xl text-center mt-4 mb-1 font-black text-[#ef4444] animate-bounce shrink-0";
                 text.innerText = "正解！";
-                text.className = "text-2xl font-black text-center mb-2 text-[#ef4444]";
+                text.className = "text-2xl font-black text-center mb-2 text-[#ef4444] shrink-0";
                 state.queue.shift(); // 正解ならキューから外す
             } else {
                 mark.innerText = "❌";
-                mark.className = "text-6xl text-center mt-4 mb-1 font-black text-blue-600";
+                mark.className = "text-6xl text-center mt-4 mb-1 font-black text-blue-600 shrink-0";
                 text.innerText = "不正解...";
-                text.className = "text-2xl font-black text-center mb-2 text-blue-600";
+                text.className = "text-2xl font-black text-center mb-2 text-blue-600 shrink-0";
                 state.missCount++;
                 // 不正解ならキューの最後に移動（後でもう一度）
                 const missedQ = state.queue.shift();
