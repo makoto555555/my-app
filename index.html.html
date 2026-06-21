@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>中学受験 歴史年号マスター</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Kiwi Maru & Kosugi Maru for a friendly Japanese look) -->
+  <link href="https://fonts.googleapis.com/css2?family=Kiwi+Maru:wght@400;500&family=Kosugi+Maru&display=swap" rel="stylesheet">
+  <!-- Canvas Confetti for celebration -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: 'Kosugi Maru', 'Kiwi Maru', sans-serif;
+      user-select: none;
+    }
+    .text-kiwi {
+      font-family: 'Kiwi Maru', serif;
+    }
+    /* アニメーション用 */
+    .bounce-active:active {
+      transform: scale(0.95);
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-6px); }
+      75% { transform: translateX(6px); }
+    }
+    .shake {
+      animation: shake 0.2s ease-in-out 0s 2;
+    }
+  </style>
+</head>
+<body class="bg-amber-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-amber-200">
+
+  <!-- ヘッダー (クイズ中はJSで非表示にして画面を広く使います) -->
+  <header id="mainHeader" class="bg-gradient-to-r from-red-500 to-amber-500 text-white shadow-md p-4 sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto flex justify-between items-center">
+      <h1 class="text-xl md:text-2xl font-bold tracking-wider flex items-center gap-2 text-kiwi">
+        <span>🇯🇵</span> 歴史年号マスター <span class="text-xs md:text-sm bg-white/20 px-2 py-0.5 rounded-full">中学受験対策</span>
+      </h1>
+      <div class="flex items-center gap-2">
+        <!-- 音量トグル -->
+        <button id="soundToggleBtn" class="p-2 hover:bg-white/10 rounded-full transition-colors" title="音量の切替">
+          <svg id="soundOnIcon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>
+          <svg id="soundOffIcon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15zM17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2"/></svg>
+        </button>
+        <!-- 実績 -->
+        <button id="showRewardsBtn" class="bg-yellow-400 hover:bg-yellow-300 text-slate-900 px-3 py-1.5 rounded-lg text-sm font-bold shadow transition-transform bounce-active flex items-center gap-1">
+          🏆 ごほうび
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="flex-grow max-w-4xl w-full mx-auto p-3 md:p-6 flex flex-col justify-start">
+
+    <!-- ================= 1. メニュー画面 ================= -->
+    <div id="screenMenu" class="space-y-6">
+      <!-- ヒーローセクション -->
+      <div class="bg-white rounded-2xl p-6 md:p-8 text-center shadow-sm border border-amber-100">
+        <h2 class="text-2xl md:text-3xl font-bold text-red-600 mb-2 text-kiwi">全150問を完全攻略！</h2>
+        <p class="text-sm md:text-base text-slate-600 max-w-lg mx-auto leading-relaxed">
+          中学受験に必要な最重要の歴史年号を網羅しました。ゲーム感覚でサクサク解いて、完ぺきに覚えましょう！
+        </p>
+      </div>
+
+      <!-- モード選択グリッド -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- 10問チャレンジ -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div>
+            <div class="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-2xl mb-4">⏱️</div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">10問チャレンジ</h3>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+              ランダムに10問出題されます。全問正解するとタイムが記録され、お宝をゲット！
+            </p>
+
+            <!-- 出題形式のセグメントコントロール -->
+            <div class="mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <label class="block text-[11px] font-bold text-slate-500 mb-2">出題される形式：</label>
+              <div class="grid grid-cols-3 gap-1 bg-slate-200/60 p-1 rounded-lg text-center">
+                <button class="quiz-dir-btn-10 active bg-white text-slate-800 text-[10px] py-1 rounded-md font-bold shadow-xs transition-all" data-dir="year">出来事→年号</button>
+                <button class="quiz-dir-btn-10 text-slate-500 text-[10px] py-1 rounded-md font-bold transition-all" data-dir="event">年号→出来事</button>
+                <button class="quiz-dir-btn-10 text-slate-500 text-[10px] py-1 rounded-md font-bold transition-all" data-dir="random">ランダム</button>
+              </div>
+            </div>
+          </div>
+          <button id="btnStart10" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-xl shadow transition-all bounce-active text-center">
+            挑戦スタート！
+          </button>
+        </div>
+
+        <!-- にがて克服モード -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+          <div id="weakBadge" class="absolute top-3 right-3 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full hidden">要復習</div>
+          <div>
+            <div class="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center text-2xl mb-4">✍️</div>
+            <h3 class="text-lg font-bold text-slate-800 mb-1">にがて克服</h3>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+              間違えた問題が自動でここにたまります。何度も解き直してにがてをゼロにしましょう！
+            </p>
+            <p id="weakCountText" class="text-xs font-bold text-indigo-600 mb-4">現在のにがて問題: 0問</p>
+
+            <!-- 出題形式のセグメントコントロール -->
+            <div class="mb-4 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+              <label class="block text-[11px] font-bold text-slate-500 mb-2">出題される形式：</label>
+              <div class="grid grid-cols-3 gap-1 bg-slate-200/60 p-1 rounded-lg text-center">
+                <button class="quiz-dir-btn-weak active bg-white text-slate-800 text-[10px] py-1 rounded-md font-bold shadow-xs transition-all" data-dir="year">出来事→年号</button>
+                <button class="quiz-dir-btn-weak text-slate-500 text-[10px] py-1 rounded-md font-bold transition-all" data-dir="event">年号→出来事</button>
+                <button class="quiz-dir-btn-weak text-slate-500 text-[10px] py-1 rounded-md font-bold transition-all" data-dir="random">ランダム</button>
+              </div>
+            </div>
+          </div>
+          <button id="btnStartWeak" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow transition-all bounce-active text-center disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+            にがてを解く！
+          </button>
+        </div>
+
+        <!-- 暗記カードモード -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div>
+            <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-2xl mb-4">📖</div>
+            <h3 class="text-lg font-bold text-slate-800 mb-2">年号カード（一覧）</h3>
+            <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+              150問全ての年号と出来事をじっくり確認。時代別に絞り込んで自分のペースで暗記できます。
+            </p>
+          </div>
+          <button id="btnStartStudy" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow transition-all bounce-active text-center">
+            カードを見る
+          </button>
+        </div>
+      </div>
+
+      <!-- 最近の記録 -->
+      <div class="bg-white rounded-2xl p-6 shadow-sm border border-amber-100">
+        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <span>📈</span> 最近の自己ベストタイム
+        </h3>
+        <div id="bestTimeContainer" class="text-sm text-slate-600 space-y-2">
+          <p>まだ記録がありません。10問チャレンジを完答して自己ベストを登録しよう！</p>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= 2. クイズプレイ画面 (1画面収まるコンパクト設計) ================= -->
+    <div id="screenQuiz" class="space-y-3 hidden flex-grow flex flex-col justify-between">
+      <!-- 状況・タイマーヘッダー -->
+      <div class="bg-white rounded-xl p-3 shadow-xs border border-amber-100 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <button id="btnQuitQuiz" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="途中でやめる">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div>
+            <span id="quizModeBadge" class="text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full">10問チャレンジ</span>
+            <div class="text-xs font-bold text-slate-500 mt-0.5">
+              問題 <span id="currentQuestionNum" class="text-sm text-slate-800 font-bold">1</span> / <span id="totalQuestionNum">10</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- タイム表示 -->
+        <div class="text-right">
+          <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">経過時間</div>
+          <div id="quizTimer" class="text-lg font-mono font-bold text-slate-800 leading-none">00:00.00</div>
+        </div>
+      </div>
+
+      <!-- 進捗ゲージ -->
+      <div class="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+        <div id="quizProgressBar" class="bg-gradient-to-r from-red-500 to-amber-500 h-full w-0 transition-all duration-300"></div>
+      </div>
+
+      <!-- 問題カード (高さを抑えてコンパクト化) -->
+      <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-amber-100 text-center relative overflow-hidden flex-grow flex flex-col justify-center min-h-[140px] max-h-[220px]">
+        <div class="absolute top-2 right-2 bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full text-[10px] font-bold" id="quizTypeLabel">
+          年号を当てよう！
+        </div>
+
+        <div class="my-auto">
+          <h2 id="questionText" class="text-base md:text-xl font-bold leading-relaxed text-slate-800 flex items-center justify-center">
+            <!-- 出来事または年号 -->
+          </h2>
+        </div>
+
+        <!-- ヒントエリア (レイアウトを壊さないようにオーバーレイ展開または簡素化) -->
+        <div class="mt-2">
+          <button id="btnShowHint" class="text-[11px] text-amber-600 hover:text-amber-700 font-bold bg-amber-50 hover:bg-amber-100 px-2.5 py-1 rounded-full transition-colors inline-flex items-center gap-1">
+            💡 おぼえ方ヒント
+          </button>
+          <p id="hintText" class="text-xs text-amber-700 bg-amber-50/70 p-2 rounded-lg border border-dashed border-amber-200 mt-1 hidden">
+            <!-- ヒント内容 -->
+          </p>
+        </div>
+      </div>
+
+      <!-- 選択肢ボタン (4択: スマホで押しやすく1画面に確実に収まる高さ) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3" id="choicesGrid">
+        <!-- JSで4つ生成：各ボタンはコンパクトなパディングと最小高に制限 -->
+      </div>
+
+      <!-- 解答フィードバックモーダル (充実した解説と語呂合わせがスクロールで読める安心設計) -->
+      <div id="answerOverlay" class="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-xs z-50 hidden p-4">
+        <div class="bg-white rounded-2xl p-5 md:p-6 text-center max-w-md w-full shadow-2xl scale-95 transition-transform duration-200 flex flex-col max-h-[90vh]" id="overlayCard">
+          <div id="feedbackIcon" class="text-4xl mb-1">⭕</div>
+          <h3 id="feedbackTitle" class="text-xl font-bold mb-1">正解！</h3>
+          
+          <!-- スクロール可能な解説コンテナ -->
+          <div class="overflow-y-auto my-2 pr-1 text-left flex-grow space-y-3" id="feedbackScrollContainer">
+            <div id="feedbackDetail">
+              <!-- JSで動的にリッチな解説を描画 -->
+            </div>
+          </div>
+
+          <button id="btnNextQuestion" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl shadow bounce-active mt-2 text-sm flex items-center justify-center gap-2 shrink-0">
+            次の問題へ ➔
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= 3. 結果発表画面 ================= -->
+    <div id="screenResult" class="space-y-6 hidden">
+      <div class="bg-white rounded-3xl p-6 md:p-8 text-center shadow-lg border border-amber-100">
+        <div class="w-16 h-16 bg-yellow-100 text-yellow-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">
+          🏆
+        </div>
+        <h2 id="resultTitle" class="text-2xl font-bold text-slate-800 mb-1 text-kiwi">お疲れ様でした！</h2>
+        <p id="resultSub" class="text-xs text-slate-500 mb-6">10問チャレンジの結果です</p>
+
+        <!-- スコア・タイム -->
+        <div class="grid grid-cols-2 gap-4 max-w-md mx-auto mb-8">
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div class="text-xs text-slate-400 font-bold mb-1">正解数</div>
+            <div class="text-2xl font-bold text-red-500 font-mono"><span id="resultScore">0</span>/10</div>
+          </div>
+          <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            <div class="text-xs text-slate-400 font-bold mb-1">クリアタイム</div>
+            <div id="resultTime" class="text-2xl font-bold text-slate-800 font-mono">00:00.00</div>
+          </div>
+        </div>
+
+        <!-- ご褒美セクション -->
+        <div id="rewardUnlockArea" class="bg-yellow-50 border border-yellow-200 rounded-2xl p-4 max-w-md mx-auto mb-8 hidden">
+          <span class="bg-yellow-400 text-slate-950 text-[10px] font-bold px-2 py-0.5 rounded-full">NEW UNLOCK!</span>
+          <h4 class="font-bold text-slate-800 mt-2 mb-1 flex items-center justify-center gap-1 text-sm">
+            🎁 ごほうび「<span id="unlockedRewardName">???</span>」を獲得！
+          </h4>
+          <p class="text-[11px] text-slate-500">ご褒美コレクションに記録されました。いつでも確認できます！</p>
+        </div>
+
+        <!-- 不正解があった場合のガイド -->
+        <div id="weakAddedGuide" class="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 max-w-md mx-auto mb-8 hidden">
+          <p class="text-xs text-indigo-800 font-bold">
+            💡 間違えた問題（<span id="addedWeakCount">0</span>問）を「にがてリスト」に追加しました！
+          </p>
+          <p class="text-[10px] text-indigo-600 mt-1">「にがて克服モード」で繰り返し復習してマスターしましょう！</p>
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
+          <button id="btnBackToMenu" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3.5 rounded-xl shadow transition-colors bounce-active text-sm">
+            メニューに戻る
+          </button>
+          <button id="btnRetryQuiz" class="flex-1 bg-red-500 hover:bg-red-600 text-white font-bold py-3.5 rounded-xl shadow transition-colors bounce-active text-sm">
+            もう一度挑戦！
+          </button>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- ================= 4. 年号暗記カード（一覧）画面 ================= -->
+    <div id="screenStudy" class="space-y-4 hidden">
+      <!-- ナビ・操作バー -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex items-center gap-2 w-full md:w-auto">
+          <button id="btnBackFromStudy" class="text-slate-400 hover:text-red-500 transition-colors mr-2 p-1" title="メニューに戻る">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+          </button>
+          <h2 class="text-base font-bold text-slate-800">年号カード・一覧（150問）</h2>
+        </div>
+
+        <!-- フィルター・検索 -->
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <select id="eraFilter" class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold border-0 focus:ring-2 focus:ring-amber-500">
+            <option value="all">すべての時代</option>
+            <option value="ancient">古代（〜平安）</option>
+            <option value="medieval">中世（鎌倉・室町）</option>
+            <option value="pre-modern">近世（安土桃山・江戸）</option>
+            <option value="modern">近代（明治・大正）</option>
+            <option value="contemporary">現代（昭和・平成・令和）</option>
+          </select>
+          <input id="cardSearchInput" type="text" placeholder="キーワードで探す..." class="bg-slate-100 text-slate-700 px-3 py-1.5 rounded-xl text-xs border-0 focus:ring-2 focus:ring-amber-500 flex-grow md:flex-grow-0" />
+        </div>
+      </div>
+
+      <!-- カード表示グリッド -->
+      <div id="cardsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <!-- JSで動的にカードを生成 -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= ごほうび・実績 モーダル ================= -->
+  <div id="rewardsModal" class="fixed inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs z-50 hidden">
+    <div class="bg-white rounded-3xl p-6 max-w-md w-full mx-4 shadow-2xl relative">
+      <!-- 閉じるボタン -->
+      <button id="btnCloseRewards" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <h3 class="text-xl font-bold text-slate-800 mb-2 flex items-center gap-2">
+        🏆 ごほうびコレクション
+      </h3>
+      <p class="text-xs text-slate-500 mb-6">10問チャレンジを全問正解すると、タイムに応じてお宝がアンロックされます！</p>
+
+      <!-- コレクション一覧 -->
+      <div class="space-y-4 max-h-[320px] overflow-y-auto pr-2" id="rewardsList">
+        <!-- JSで実績リストを生成 -->
+      </div>
+
+      <button id="btnCloseRewardsFooter" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl mt-6 shadow bounce-active text-sm">
+        閉じる
+      </button>
+    </div>
+  </div>
+
+  <!-- フッター -->
+  <footer id="mainFooter" class="bg-slate-100 text-center py-4 text-xs text-slate-400 border-t border-slate-200 mt-8">
+    <div class="max-w-4xl mx-auto px-4">
+      <p>© 2026 中学受験 歴史年号マスター. 全問正解を目指してがんばろう！</p>
+    </div>
+  </footer>
+
+  <!-- ================= JavaScript ================= -->
+  <script>
+    // --- 1. 150問の歴史年号・おぼえ方・中学受験必須解説データベース ---
+    const historyData = [
+      { year: 57, event: "奴国王が後漢に使いを送る", era: "ancient", hint: "「こんな（57）お土産もらったよ」と金印を自慢する様子を想像しよう。", desc: "福岡県の志賀島（しかのしま）で発見された「漢委奴国王（かんのわのなのこくおう）」の金印は、この時に後漢の光武帝から授けられたものです。" },
+      { year: 239, event: "卑弥呼が魏に使いを送る", era: "ancient", hint: "「ふさく（239）に苦しむ邪馬台国」を救うために魏に使いを送りました。", desc: "邪馬台国の女王・卑弥呼が中国の魏に使いを送り、「親魏倭王（しんぎわおう）」の称号と金印、銅鏡100枚を授かりました。" },
+      { year: 538, event: "仏教伝来", era: "ancient", hint: "「ご参拝（538）しましょう、百済から届いた仏像に」", desc: "百済（くだら）の聖明王から欽明天皇に仏像や経典が送られました。のちに仏教受け入れをめぐって蘇我氏と物部氏が対立します。" },
+      { year: 593, event: "聖徳太子が推古天皇の政治に参加する", era: "ancient", hint: "「コックさん（593）ではないけれど、国を治める聖徳太子」", desc: "聖徳太子（厩戸皇子）が叔母の推古天皇の摂政（せっしょう）となり、蘇我馬子と協力して天皇中心の国づくりを進めました。" },
+      { year: 603, event: "冠位十二階の制度", era: "ancient", hint: "「群れ（603）を率いる優秀な役人を、色で判別！」", desc: "家柄にとらわれず、才能や功績のある人物を役人に登用する制度。冠の色で12の等級が表されました。" },
+      { year: 604, event: "十七条の憲法", era: "ancient", hint: "「群れよく（604）話し合い、和をもって貴しとなす」", desc: "役人（官僚）としての心構えを説いた憲法。第一条の「和（わ）をもって貴（とうと）しとなす」は特に入試によく出ます。" },
+      { year: 607, event: "遣隋使（小野妹子ら）", era: "ancient", hint: "「群れな（607）して隋の国へ渡る小野妹子」", desc: "小野妹子（おののいもこ）らが中国の隋に送られました。「日出づる処の天子…」という対等な立場を示す国書を届け、隋の皇帝を驚かせました。" },
+      { year: 630, event: "第1回遣唐使", era: "ancient", hint: "「無罪（630）を祈って、唐への危険な大航海！」", desc: "犬上御田鍬（いぬがみのみたすき）らが唐へ派遣されました。唐の進んだ制度や仏教文化を日本へ持ち帰るのが主な目的でした。" },
+      { year: 645, event: "大化の改新", era: "ancient", hint: "「蒸し（645）焼きにされた入鹿、中大兄皇子のクーデター」", desc: "中大兄皇子（天智天皇）と中臣鎌足（藤原鎌足）が、権力を握っていた蘇我入鹿（そがのいるか）を滅ぼし、公地公民などの改革をスタートしました。" },
+      { year: 663, event: "白村江の戦い", era: "ancient", hint: "「ろくろく（663）準備もできずに唐・新羅連合軍に大敗」", desc: "日本が同盟国だった百済を助けるために朝鮮半島に出兵しましたが、唐と新羅（しんら）の連合軍に大敗を喫しました。" },
+      { year: 672, event: "壬申の乱", era: "ancient", hint: "「むな（672）しい身内の争い、天武天皇が誕生へ」", desc: "天智天皇の死後、後継者をめぐって弟の大海人皇子（おおあまのおうじ）と息子の大友皇子が激突。勝利した大海人皇子が天武天皇となりました。" },
+      { year: 694, event: "藤原京遷都", era: "ancient", hint: "「向く（694）方向は、日本初の本格的な中国式都城」", desc: "持統天皇が日本で最初につくらせた、中国（唐）風の本格的な碁盤の目の都（条坊制）です。奈良県南部に位置します。" },
+      { year: 701, event: "大宝律令", era: "ancient", hint: "(" + "「なおい（701）い国づくりへ、法律の完成」", desc: "刑罰の決まり（律）と政治のきまり（令）が揃った日本初の本格的な法律。これに基づき「律令国家」としての骨組みが完成しました。" },
+      { year: 708, event: "和同開珎", era: "ancient", hint: "「なおや（708）さんも喜ぶ、日本初の本格的な銅貨」", desc: "武蔵国（現在の埼玉県）から銅が献上されたことを祝い、唐の開元通宝をモデルにつくられた日本初の公的な銅銭です。" },
+      { year: 710, event: "平城京遷都", era: "ancient", hint: "「なんと（710）見事な平城京、咲く花のよう」", desc: "元明天皇が唐の都「長安」にならって奈良に新しい都を築きました。ここから約80年間を「奈良時代」と呼びます。" },
+      { year: 712, event: "古事記", era: "ancient", hint: "「何（71）が何でもつ（2）なぐ、日本の古い神話」", desc: "稗田阿礼（ひえだのあれ）が暗記していた神話や歴史を、太安万侶（おおのやすまろ）が書き起こした日本最古の歴史書です。" },
+      { year: 720, event: "日本書紀", era: "ancient", hint: "「何に（720）書く？日本の正史を漢文で」", desc: "舎人親王（とねりしんのう）らが中心となって編纂した、神代から持統天皇までの歴史を漢文で書き記した公式の歴史書です。" },
+      { year: 723, event: "三世一身法", era: "ancient", hint: "「なにい（723）！三代しか土地を使えないのか！」", desc: "人口増加による公有地の不足を補うため、新しく開墾（かいこん）した土地は孫の代（三代）まで私有を認めるという法律です。" },
+      { year: 741, event: "国分寺・国分尼寺建立の詔", era: "ancient", hint: "「なし（74）をい（1）たずらにもぎつつ、仏教で国を守ろう」", desc: "聖武天皇が、当時流行していた疫病や政情不安から仏教の力で国を守るため（鎮護国家）、全国の国ごとに国分寺・国分尼寺を建てるよう命じました。" },
+      { year: 743, event: "墾田永年私財法", era: "ancient", hint: "「なし（74）み（3）が湧く、永久に自分の耕した土地」", desc: "自分で開墾した土地を「永久に」自分の所有にして良いとする法律。これにより公地公民制が崩れ、後の荘園（しょうえん）へつながりました。" },
+      { year: 752, event: "東大寺大仏の完成", era: "ancient", hint: "「なご（75）むに（2）っこり大仏さま開眼」", desc: "聖武天皇が発願した東大寺の盧舎那仏（大仏）が完成し、国内外から僧侶が集まって盛大な開眼供養（かいがんくよう）が行われました。" },
+      { year: 794, event: "平安京遷都", era: "ancient", hint: "「鳴くよ（794）ウグイス平安京、千年の都のはじまり」", desc: "桓武天皇が仏教勢力から離れ、人心を一新するために京都に都を移しました。ここから鎌倉幕府が開かれるまでを「平安時代」と呼びます。" },
+      { year: 866, event: "藤原良房が摂政となる", era: "ancient", hint: "「ハロー（86）む（6）なしくない！天皇以外の臣下で初の摂政誕生」", desc: "藤原良房（よしふさ）が、天皇の幼少期に代わりに政治を行う「摂政」に皇族以外で初めて就任しました。藤原氏の権力が強まる契機となりました。" },
+      { year: 887, event: "藤原基経が関白となる", era: "ancient", hint: "「パパは（88）な（7）んでもできる、大人の天皇を助ける関白さま」", desc: "藤原基経（もとつね）が、成人した天皇を補佐して政治の最高決定を行う「関白（かんぱく）」に初めて就任しました。摂政・関白の政治を摂関政治と言います。" },
+      { year: 894, event: "遣唐使の停止", era: "ancient", hint: "「白紙（894）に戻そう遣唐使、菅原道真の提案」", desc: "唐の衰退と往復の危険を理由に、菅原道真（すがわらのみちざね）が進言して停止。これにより、日本独自の文化である「国風（こくふう）文化」が発達しました。" },
+      { year: 939, event: "平将門の乱 / 藤原純友の乱", era: "ancient", hint: "「くさく（939）なった地方政治に不満、東西で武士が反乱」", desc: "関東で平将門が、瀬戸内海で藤原純友が同時に反乱を起こしました（承平・天慶の乱）。朝廷の衰退と、地方での武士の実力が高まるきっかけとなりました。" },
+      { year: 988, event: "尾張の国司が訴えられる", era: "ancient", hint: "「悔（9）やむ国司、パ（8）パ（8）と訴えられた藤原元命」", desc: "尾張国（愛知県）の百姓たちが、欲深い国司（こくし）の藤原元命（もとなが）の悪政を朝廷に訴え出ました（尾張国郡司百姓等解）。国司の不正が目立った時代です。" },
+      { year: 1016, event: "藤原道長が摂政となる", era: "ancient", hint: "「遠い（101）む（6）かし、この世をわが世と望月を詠む」", desc: "藤原道長が摂政となり、摂関政治の絶頂期を迎えました。「この世をば わが世とぞ思う 望月の…」の歌が有名です。" },
+      { year: 1051, event: "前九年の役", era: "ancient", hint: "「人の（10）強（5）い意志（1）で、奥州での激戦始まる」", desc: "奥州（東北地方）の強力な豪族・安倍氏を滅ぼすために源頼義・義家親子が戦った戦乱。出羽国の清原氏の助けを借りて勝利しました。" },
+      { year: 1083, event: "後三年の役", era: "ancient", hint: "「入れ（10）や（8）み（3）や、再び東北の覇権をめぐる戦い」", desc: "前九年の役の後に東北で起こった清原氏の内紛。源義家がこれを平定し、この乱の後に東北の覇者となる「奥州藤原氏」が台頭しました。" },
+      { year: 1086, event: "白河上皇の院政", era: "ancient", hint: "「入れ（10）歯（8）む（6）なしく、上皇が政治を陰から支配」", desc: "白河天皇が幼い堀河天皇に位を譲った後、みずから「上皇（法皇）」となって摂関家を排除し、独自の政治（院政）をスタートしました。" },
+      { year: 1156, event: "保元の乱", era: "ancient", hint: "「いい（11）ころ（56）あいに武士が政界進出する乱」", desc: "崇徳上皇と後白河天皇の対立、さらに摂関家や武士（源義朝、平清盛ら）の対立が絡み合った内乱。武士の武力が朝廷に重宝されるきっかけとなりました。" },
+      { year: 1159, event: "平治の乱", era: "ancient", hint: "「いい（11）ご（5）く（9）らくを夢見て源平の二大巨頭が衝突」", desc: "保元の乱の後に権力を握った平清盛（平氏）と、源義朝（源氏）が激突。源氏が敗れて義朝は暗殺され、息子の源頼朝は伊豆へ流されました。" },
+      { year: 1167, event: "平清盛が太政大臣となる", era: "ancient", hint: "「いい（11）胸（67）毛の平清盛、武士初の太政大臣へ」", desc: "平清盛が武士として初めて朝廷の最高位である「太政大臣」に就任。兵庫の音戸の瀬戸の開削や、日宋貿易で平氏の一時代を築きました。" },
+      { year: 1185, event: "壇ノ浦の戦い / 守護・地頭の設置", era: "ancient", hint: "「いい（11）箱（85）つくろう、平氏滅亡と頼朝の守護地頭設置」", desc: "山口県の壇ノ浦で平氏が滅亡。同年、源頼朝は国ごとに「守護（軍事担当）」、荘園や公領ごとに「地頭（徴税担当）」を置く権利を朝廷に認めさせ、鎌倉幕府の実質的な支配が始まりました。" },
+      { year: 1192, event: "源頼朝が征夷大将軍となる", era: "ancient", hint: "「いい（11）国（92）つくろう鎌倉幕府」", desc: "源頼朝が後鳥羽天皇から「征夷大将軍」に任命されました。これによって武士による最初の本格的な政権「鎌倉幕府」が名実ともに誕生しました。" },
+      { year: 1221, event: "承久の乱", era: "medieval", hint: "「人（12）に不意（21）打ち、後鳥羽上皇の幕府打倒の兵」", desc: "後鳥羽上皇が、将軍が途絶えた幕府の混乱を機に兵をあげましたが、北条政子の訴え（御恩と奉公）で結束した東国御家人に敗北。乱後、京都に六波羅探題が置かれました。" },
+      { year: 1232, event: "御成敗式目", era: "medieval", hint: "「一（1）つに（2）まとまる、武士（32）の道徳や慣習の法律」", desc: "3代執権の北条泰時が制定した、日本初の武士のための法律（貞永式目）。御家人同士の土地争いを公平に裁く基準となりました。" },
+      { year: 1274, event: "文永の役", era: "medieval", hint: "「いつ（12）な（7）よ（4）ってくるかわからない元寇の第一波」", desc: "モンゴル帝国（元）のクビライが日本に攻めてきた第1回目の元寇。集団戦法や火薬兵器（てつはう）に苦戦しましたが、暴風雨などによって元軍は撤退しました。" },
+      { year: 1281, event: "弘安の役", era: "medieval", hint: "「いつ（12）もパ（8）パ（1）と戦う、防塁を築いて防いだ二回目の元寇」", desc: "2回目の元寇。8代執権・北条時宗のもと、幕府があらかじめ博多湾沿いに石塁（防塁）を築いて上陸を防ぎ、再び大型台風の襲来で撤退しました。" },
+      { year: 1297, event: "永仁の徳政令", era: "medieval", hint: "「皮肉（129）なな（7）みだ、御家人救済のはずが逆効果」", desc: "元寇の防衛費用で困窮した御家人を救うため、幕府が出した借金帳消し令。結果として、御家人はお金を貸してもらえなくなり混乱を招きました。" },
+      { year: 1333, event: "鎌倉幕府の滅亡", era: "medieval", hint: "「いざ（13）み（3）み（3）ず見て、新田義貞らに討たれる北条氏」", desc: "後醍醐天皇の呼びかけに応じた足利尊氏や新田義貞らによって鎌倉が攻め落とされ、北条高時が自殺して鎌倉幕府は滅亡しました。" },
+      { year: 1334, event: "建武の新政", era: "medieval", hint: "「いざ（13）さ（3）よ（4）なら、武士の世、天皇中心への急進的改革」", desc: "後醍醐天皇がスタートさせた、公家（貴族）を優遇した新しい政治。しかし武士たちの不満が高まり、わずか2年余りで崩壊しました。" },
+      { year: 1336, event: "南北朝の動乱が始まる", era: "medieval", hint: "「いざ（13）み（3）む（6）、吉野と京都に分かれて対立」", desc: "足利尊氏が光明天皇を立てて京都に北朝を開いたのに対し、後醍醐天皇は奈良の吉野へ逃れて南朝を開きました。これ以降、約60年間の対立が続きます。" },
+      { year: 1338, event: "足利尊氏が京都に室町幕府を開く", era: "medieval", hint: "「いざ（13）都（38）で室町幕府を。武士の政権再建」", desc: "足利尊氏が征夷大将軍になり、京都に幕府（後の室町幕府）を開きました。鎌倉幕府と異なり、都（京都）の中に拠点を作ったのが特徴です。" },
+      { year: 1392, event: "南北朝合一", era: "medieval", hint: "「いざ（13）国（92）まとまる、義満の外交力」", desc: "3代将軍の足利義満が、対立していた南朝と北朝を和解させて一つに統合。室町幕府の全盛期を築く土台を作りました。" },
+      { year: 1404, event: "勘合貿易", era: "medieval", hint: "「い（1）よ（4）いよお（0）し（4）、明との公的貿易開始」", desc: "足利義満が明（中国）の皇帝から「日本国王」に認められ、倭寇（海賊）と正式な貿易船を区別するため「勘合（かんごう）」という札を使用しました。" },
+      { year: 1428, event: "正長の土一揆", era: "medieval", hint: "「意地（14）には（28）勝てぬ、徳政を求める近江の馬借らの一揆」", desc: "近江（滋賀県）の馬借（輸送業者）らが中心となり、「徳政（借金帳消し）」を求めて蜂起。日本で初めての大規模な徳政一揆です。" },
+      { year: 1467, event: "応仁の乱", era: "medieval", hint: "「人（14）む（6）な（7）しく戦う、京都を火の海にした11年の大乱」", desc: "将軍（足利義政）の後継者争いや、有力守護大名（細川氏・山名氏）の権力争い。京都が焦土と化し、これより約100年の「戦国時代」が始まります。" },
+      { year: 1485, event: "山城の国一揆", era: "medieval", hint: "「意志（14）は（8）ご（5）うつく、国人・百姓たちが大名を追放」", desc: "山城国（京都府南部）の国人や地侍・百姓が団結し、対立していた守護大名（畠山氏）の軍勢を追い払い、8年間にわたる自治を行いました。" },
+      { year: 1488, event: "加賀の一向一揆", era: "medieval", hint: "「意志（14）は（8）パ（8）パ並に固い、門徒が守護大名を自害へ」", desc: "浄土真宗（一向宗）の門徒たちが団結して守護大名（富樫氏）を倒し、以後約100年にわたり「百姓の持ちたる国」として門徒による自治が続きました。" },
+      { year: 1543, event: "鉄砲伝来", era: "medieval", hint: "「以後（15）よ（4）さん（3）がかかる、種子島への鉄砲到達」", desc: "ポルトガル人を乗せた船が鹿児島県の種子島（たねがしま）に漂着し、城主の種子島時尭が火縄銃を買い取り、瞬く間に全国へ広まりました。" },
+      { year: 1549, event: "キリスト教伝来", era: "medieval", hint: "「以後（15）よく（49）広まるザビエルとイエズス会の教え」", desc: "鹿児島に上陸したイエズス会の宣教師フランシスコ・ザビエルがキリスト教を日本に初めて伝えました。大名（キリシタン大名）の保護を受けて広がりました。" },
+      { year: 1560, event: "桶狭間の戦い", era: "medieval", hint: "「イチゴ（15）群れ（60）る、織田信長が今川義元を急襲」", desc: "駿河の有力大名・今川義元の大軍を、尾張の弱小だった織田信長が雨に紛れて急襲し、討ち取りました。信長が天下統一へ躍進するきっかけです。" },
+      { year: 1573, event: "室町幕府の滅亡", era: "medieval", hint: "「以後（15）な（7）み（3）だの足利義昭、信長に追放される」", desc: "織田信長が、対立を深めていた室町幕府の15代将軍・足利義昭を京都から追放。これによって室町幕府は滅亡しました。" },
+      { year: 1575, event: "長篠の戦い", era: "medieval", hint: "「以後（15）な（7）こ（5）う、織田・徳川連合軍が武田騎馬隊を撃破」", desc: "愛知県で織田信長・徳川家康連合軍が、武田勝頼の強力な騎馬隊を破りました。信長が大量の鉄砲と木柵を組織的に使った近代的な戦いです。" },
+      { year: 1582, event: "本能寺の変 / 太閤検地", era: "medieval", hint: "「いちご（15）パン（82）食べてる暇ない本能寺の裏切り」", desc: "京都の本能寺に宿泊中だった織田信長が、家臣の明智光秀に裏切られ自害しました。同年、豊臣秀吉は天下統一事業の一環として測量（太閤検地）を開始しました。" },
+      { year: 1588, event: "刀狩令", era: "medieval", hint: "「以後（15）パ（8）パ（8）は武器を持てない一揆防止の刀狩り」", desc: "豊臣秀吉が、一揆を防止し兵農分離を進めるため、農民や寺院から刀や弓、槍、鉄砲などの武器を没収しました。方広寺の大仏の釘にするという口実でした。" },
+      { year: 1590, event: "豊臣秀吉が全国統一", era: "medieval", hint: "「戦国は、戦（15）国（9）お（0）しまい、小田原北条氏を降伏させて統一」", desc: "豊臣秀吉が関東の北条氏を小田原城で滅ぼし、東北地方の領主たちも服従させて、応仁の乱から約120年続いた戦国時代を終結させました。" },
+      { year: 1592, event: "文禄の役", era: "medieval", hint: "「異国（15）に急（9）に（2）攻め込む秀吉の一度目の朝鮮出兵」", desc: "天下統一を果たした豊臣秀吉が、明の征服を目指して朝鮮半島に大軍を送った第1回目の出兵。朝鮮の人々や李舜臣（りしゅんしん）の義兵軍などの激しい抵抗に遭いました。" },
+      { year: 1597, event: "慶長の役", era: "medieval", hint: "「異国（15）に急（9）なな（7）みだ、再度行われた朝鮮出兵」", desc: "明との和議交渉が決裂したため、秀吉が再度行った第2回目の出兵。翌1598年に秀吉が死去したことで、日本軍はただちに引き揚げました。" },
+      { year: 1600, event: "関ヶ原の戦い", era: "pre-modern", hint: "「ヒーロー（16）お（0）お（0）いに戦う関ヶ原、天下分け目の戦い」", desc: "岐阜県の関ヶ原にて、徳川家康率いる「東軍」と、石田三成ら豊臣家を擁する「西軍」が衝突。わずか半日で東軍の勝利に終わり、家康が覇権を握りました。" },
+      { year: 1603, event: "徳川家康が江戸幕府を開く", era: "pre-modern", hint: "「ヒーロー（16）お（0）っさ（3）ん家康、武家政権を江戸に樹立」", desc: "徳川家康が朝廷から征夷大将軍に任命され、現在の東京（江戸）に新政権を開きました。これ以降、約260年にわたる平和な江戸時代が始まります。" },
+      { year: 1615, event: "大坂の陣 / 武家諸法度（元和令）", era: "pre-modern", hint: "「色（16）いろ（15）あった大坂城落城、豊臣氏滅亡」", desc: "大坂冬の陣・夏の陣によって豊臣秀頼らが自害し、豊臣氏が滅亡。同年に幕府は大名を取り締まる「武家諸法度」や、1つの国に城を1つだけ残す「一国一城令」を出しました。" },
+      { year: 1635, event: "参勤交代の制度化", era: "pre-modern", hint: "「ヒーロー（16）み（3）ご（5）とに大名を往復させて財政を削る」", desc: "3代将軍の徳川家光が「武家諸法度（寛永令）」の中で、大名に対して1年おきに領地と江戸を往復することを義務付けました。大名の反乱を防ぐための経済的・精神的抑制策です。" },
+      { year: 1637, event: "島原・天草一揆（島原の乱）", era: "pre-modern", hint: "「広（16）い惨（37）劇、過酷な年貢と禁教への反乱」", desc: "長崎の島原や熊本の天草のキリシタン農民らが、重い年貢の取り立てと激しいキリスト教弾圧に抗議し、16歳の天草四郎（益田時貞）を大将に蜂起しました。" },
+      { year: 1639, event: "ポルトガル船の来航禁止（「鎖国」の完成）", era: "pre-modern", hint: "「色（16）さ（3）く（9）国を閉ざして。キリスト教流入を遮断」", desc: "キリスト教の布教を防ぐため、幕府がポルトガル船の来航を禁止しました。これにより出入国を制限する、いわゆる「鎖国（さこく）」体制が完成しました。" },
+      { year: 1669, event: "シャクシャインの戦い", era: "pre-modern", hint: "「いろんな（16）無（6）念（9）、アイヌ首長が松前藩の交易独占に蜂起」", desc: "アイヌ民族の首長シャクシャインが、不平等な交易を強いる松前藩（北海道）の支配に対して立ち上がりましたが、松前藩に和睦の席でだまし討ちされ敗北しました。" },
+      { year: 1685, event: "生類憐みの令", era: "pre-modern", hint: "「いろいろ（16）野（8）良（5）犬をはじめ、生き物すべてを愛護させる悪法」", desc: "5代将軍・徳川綱吉（犬公方）が出した、犬や鳥、昆虫から魚に至るまで、生き物を傷つけることを禁じた法令群。行き過ぎた庶民の取り締まりで非常に不評でした。" },
+      { year: 1782, event: "天明のききん", era: "pre-modern", hint: "「いな（17）ご（8）に（2）やられる冷害と浅間山の大噴火」", desc: "浅間山の大噴火による灰や冷害が原因で、東北地方を中心に起こった大飢饉（ききん）。米飢饉により、大都市で「打ちこわし」が頻発しました。" },
+      { year: 1792, event: "ラクスマンの根室来航", era: "pre-modern", hint: "「いい（17）国（92）求めて、ロシアの使節が初来航」", desc: "ロシアの女帝エカチェリーナ2世の命令で、使節ラクスマンが漂流民の大黒屋光太夫を連れて北海道の根室に来航し、通商（貿易）を求めました。" },
+      { year: 1808, event: "フェートン号事件", era: "pre-modern", hint: "「いや（18）お（0）パ（8）ラ、イギリス軍艦が長崎に侵入」", desc: "ナポレオン戦争の影響で、敵対していたオランダ船を拿捕（だほ）するため、イギリス軍艦フェートン号が偽装して長崎に不法侵入。幕府は衝撃を受け、異国船排除の姿勢を強めました。" },
+      { year: 1825, event: "異国船打払令（外国船打払令）", era: "pre-modern", hint: "「いや（18）に（2）ご（5）ういんに、大砲で近寄る外国船を追い払う」", desc: "幕府が日本沿岸に近づくオランダ・中国以外の外国船を見つけ次第、大砲で攻撃して問答無用で追い払うよう命じた非常に強硬な排除令です（無二念打払令とも）。" },
+      { year: 1837, event: "大塩の乱", era: "pre-modern", hint: "「いや（18）み（3）なな（7）みだ、大塩平八郎ら元役人が立ち上がる」", desc: "天保の飢饉の際、大阪の貧しい人々を救うため、元・東町奉行所の与力（役人）で陽明学者の大塩平八郎が門下生らとともに武装蜂起。幕府に大きな衝撃を与えました。" },
+      { year: 1840, event: "アヘン戦争", era: "pre-modern", hint: "「いや（18）よ（4）お（0）アヘン、大国・清がイギリスに敗れる」", desc: "清（中国）とイギリスの戦争。アヘンの密輸取締りをきっかけに勃発し、イギリスの近代軍事力に清が惨敗。幕府は異国船打払令を緩める決定（薪水給与令）を急ぎました。" },
+      { year: 1853, event: "ペリーの浦賀来航", era: "pre-modern", hint: "「いや（18）ご（5）み（3）だらけの黒船出現に江戸中が大騒ぎ」", desc: "アメリカ東インド艦隊司令官ペリーが4隻の蒸気船（黒船）を引き連れて神奈川県の浦賀に来航し、大統領フィルモアの開国要求書を渡しました。" },
+      { year: 1854, event: "日米和親条約（開国）", era: "pre-modern", hint: "「一夜（18）でご（5）よ（4）、鎖国を認めて２つの港を開く」", desc: "ペリーが再び来航し、幕府が締結した初の条約。下田（静岡県）と箱館（北海道）の2港を開き、給水や薪水の提供を認め、長い鎖国体制が終わりました。" },
+      { year: 1858, event: "日米修好通商条約 / 安政の大獄", era: "pre-modern", hint: "「いや（18）ご（5）は（8）ち、不平等な自由貿易の始まり」", desc: "大老の井伊直弼（いいなおすけ）が天皇の許しを得ずに調印した貿易条約。関税自主権がなく、領事裁判権を認めた不平等条約。反対派を厳しく弾圧しました（安政の大獄）。" },
+      { year: 1860, event: "桜田門外の変", era: "pre-modern", hint: "「いや（18）む（6）な（0）しく白雪染まる井伊大老暗殺」", desc: "安政の大獄による強硬な弾圧に憤った水戸藩・薩摩藩の元浪士たちが、江戸城の桜田門外で大老・井伊直弼を急襲して暗殺。幕府の権威は地に落ちました。" },
+      { year: 1862, event: "生麦事件", era: "pre-modern", hint: "「いや（18）む（6）に（2）島津久光の列を横切って切られたイギリス人」", desc: "横浜郊外の生麦村で、薩摩藩の国父・島原久光の行列を乗馬のまま横切ったイギリス人4人が藩士に殺傷された事件。後の薩英戦争の原因となりました。" },
+      { year: 1863, event: "薩英戦争", era: "pre-modern", hint: "「いや（18）む（6）ざん（3）薩摩藩と英国艦隊、鹿児島湾での砲撃戦」", desc: "生麦事件の解決と賠償を求めるイギリス艦隊が鹿児島湾に侵入し、薩摩藩と砲撃戦。薩摩は最新武器の必要性を痛感し、逆にイギリスと急接近しました。" },
+      { year: 1866, event: "薩長同盟", era: "pre-modern", hint: "「いや（18）む（6）む（6）と坂本龍馬の仲介で宿敵同士が提携」", desc: "対立していた薩摩藩（西郷隆盛ら）と長州藩（木戸孝允ら）が、土佐藩の坂本龍馬・中岡慎太郎の仲介で、倒幕のために極秘で軍事同盟を結びました。" },
+      { year: 1867, event: "大政奉還 / 王政復古の大号令", era: "pre-modern", hint: "「いや（18）む（6）な（7）しく政権を朝廷に返還して窮地を凌ぐ」", desc: "15代将軍・徳川慶喜が政権を天皇（朝廷）に返上（大政奉還）。これに対し、岩倉具視や薩長らが天皇中心の新政府の樹立を宣言しました（王政復古の大号令）。" },
+      { year: 1868, event: "戊辰戦争 / 五箇条の御誓文 / 明治元年", era: "modern", hint: "「いや（18）む（6）や（8）にできない、新政府と旧幕府の全面内戦」", desc: "鳥羽・伏見の戦いから始まった、新政府軍と旧幕府軍の戦争。同年に明治天皇が「五箇条の御誓文」を発表して新しい国の基本方針を示し、元号を「明治」と定めました。" },
+      { year: 1869, event: "版籍奉還", era: "modern", hint: "「いや（18）む（6）く（9）大名たち、領地と人民を国に返す」", desc: "各藩の藩主（大名）から、領地（版）と人民（籍）の支配権を明治天皇に返還させました。旧大名はそのまま「知藩事」として留まりました。" },
+      { year: 1871, event: "廃藩置県 / 岩倉使節団の派遣 / 郵便制度の開始", era: "modern", hint: "「いや（18）な（7）い（1）藩を全面的に廃止し、県に統合」", desc: "軍事力を使って各藩を完全に廃止。全国を中央から派遣された知事・県令が治める中央集権国家へ移行。特権を維持していた岩倉具視らを海外へ派遣しました。" },
+      { year: 1872, event: "学制 / 地租改正 / 富岡製糸場の操業", era: "modern", hint: "「いや（18）な（7）に（2）もかも近代化、すべての国民が就学へ」", desc: "「国民皆学」を目指し、小学校教育をスタート（学制）。同年、近代化資金づくりのため、群馬県に官営の「富岡製糸場」が建設され、フランスの技術を取り入れて創業しました。" },
+      { year: 1873, event: "徴兵令 / 地租改正", era: "modern", hint: "「いや（18）な（7）み（3）だ、農民の不満爆発、地主・納税の決定」", desc: "満20歳以上のすべての男子に兵役の義務を課す「徴兵令」。さらに土地の所有者に地価の3%を現金で納税させる「地租改正（ちそかいせい）」を実施しました。" },
+      { year: 1874, event: "民撰議院設立の建白書", era: "modern", hint: "「いや（18）な（7）よ（4）と板垣退助が国会開設を呼びかける」", desc: "征韓論（せいかんろん）に敗れ政府を去った板垣退助（いたがきたいすけ）らが、国民の選んだ議員による国会の開設を求めて政府に提出。自由民権運動の始まりとなりました。" },
+      { year: 1875, event: "樺太・千島交換条約", era: "modern", hint: "「いや（18）な（7）ご（5）ね、ロシアと平和裏に国境交渉妥結」", desc: "日本とロシアの間で国境を画定する条約。樺太（サハリン）をすべてロシア領とし、千島（ちしま）列島をすべて日本領とすることを決定しました。" },
+      { year: 1877, event: "西南戦争", era: "modern", hint: "「いや（18）な（7）な（7）みだ、西郷隆盛の最大かつ最後の士族反乱」", desc: "新政府への不満を募らせた鹿児島県の士族たちが、西郷隆盛（さいごうたかもり）を担いで起こした最大規模の反乱。徴兵制の新政府軍に敗れ、士族の特権は終わりました。" },
+      { year: 1881, event: "国会開設の公約", era: "modern", hint: "「いや（18）パ（8）パい（1）い国会、10年後の開設を明治政府が発表」", desc: "明治十四年の政変の際、激しく国会開設を求める世論を抑えるため、明治天皇の名で「10年後の1890年に国会を開設する」と約束しました。" },
+      { year: 1884, event: "秩父事件", era: "modern", hint: "「いや（18）パ（8）パよ（4）、松方デフレで苦しむ秩父農民の蜂起」", desc: "激しい不況（松方デフレ）と借金に苦しむ埼玉県秩父地方の自由党員や農民たちが「困民党」を結成し、武装蜂起した事件。政府軍（憲兵や軍隊）により鎮圧されました。" },
+      { year: 1885, event: "内閣制度", era: "modern", hint: "「いや（18）パ（8）パご（5）苦労、伊藤博文が初代首相に就任」", desc: "近代憲法制定に向けて行政の仕組みを整えるため、従来の太政官制に代わり内閣制度を創設。長州出身の伊藤博文が初代内閣総理大臣（首相）になりました。" },
+      { year: 1886, event: "ノルマントン号事件", era: "modern", hint: "「いや（18）パ（8）パむ（6）ごい、イギリス人船長が日本人を放置」", desc: "和歌山沖でイギリス貨物船が沈没し、日本人乗客全員が水死。しかし領事裁判権のために英国人船長は軽い罰のみで終わり、国民の条約改正要求が急速に強まりました。" },
+      { year: 1889, event: "大日本帝国憲法の発布", era: "modern", hint: "「いち（1）早く（889）近代化、天皇が与える形の帝国憲法誕生」", desc: "明治天皇が黒田清隆首相に手渡す形（欽定憲法）で発布されたアジア初の近代憲法。ドイツ（プロイセン）憲法を模範とし、天皇に絶大な権限がありました。" },
+      { year: 1890, event: "第1回衆議院議員選挙 / 教育勅語発布", era: "modern", hint: "「いや（18）く（9）れお（0）願い、国民が初めて投票する総選挙」", desc: "初めての帝国議会が開会。選挙権は「直接国税15円以上を納める25歳以上の男子（人口のわずか1.1%）」でした。道徳の基準として「教育勅語」も出されました。" },
+      { year: 1894, event: "領事裁判権の撤廃 / 日清戦争", era: "modern", hint: "「一（1）発急（89）死（4）、陸奥宗光の条約改正と日清の激突」", desc: "外相・陸奥宗光がイギリスとの間で治外法権（領事裁判権）の撤廃に調印。同年、朝鮮での東学党の乱（甲午農民戦争）を契機に、日本と清の間で「日清戦争」が勃発しました。" },
+      { year: 1895, event: "下関条約 / 三国干渉", era: "modern", hint: "「いや（18）く（9）ご（5）、日清和平の下関条約とロシアらの妨害」", desc: "日清戦争に勝利した日本が、清との間で下関条約を締結。多額の賠償金と台湾・遼東半島を獲得しましたが、ロシア・ドイツ・フランスの介入（三国干渉）で遼東半島を清に返還しました。" },
+      { year: 1901, event: "八幡製鉄所の操業 / 田中正造が天皇に直訴", era: "modern", hint: "「行く（19）お（0）い（1）でおいしい、北九州に建設された国産鉄鋼工場」", desc: "日清戦争の賠償金を利用し、福岡県に建設された官営の製鉄所。筑豊炭田の石炭と中国（大冶）の鉄鉱石を使い、日本の重工業の出発点となりました。" },
+      { year: 1902, event: "日英同盟", era: "modern", hint: "「行く（19）お（0）に（2）に対抗、ロシア包囲網で英国と結ぶ」", desc: "東アジアで南下政策を強めるロシアに対抗するため、日本とイギリスの間で結ばれた軍事同盟。お互いの利害が一致した異例の対等な条約でした。" },
+      { year: 1904, event: "日露戦争", era: "modern", hint: "「行く（19）お（0）よ（4）びでないロシアとの戦いに突入」", desc: "満州（中国東北部）と朝鮮の支配権をめぐり、大国ロシアと開戦。日本海海戦で東郷平八郎率いる連合艦隊がバルチック艦隊を撃破するなど、大苦戦の末辛勝しました。" },
+      { year: 1905, event: "ポーツマス条約", era: "modern", hint: "「行く（19）お（0）ご（5）れ、賠償金なしに激怒した日露講和」", desc: "アメリカ大統領ルーズベルトの仲介でロシアと結んだ講和条約。韓国の支配権、樺太の南半分、南満州鉄道の権利を獲得。しかし、賠償金がなく日比谷焼打事件が起きました。" },
+      { year: 1910, event: "韓国併合", era: "modern", hint: "「行く（19）い（1）と（0）うなき併合、朝鮮総督府の設置」", desc: "初代統監の伊藤博文が安重根に暗殺された翌年、大韓帝国を完全に日本の領土としました（韓国併合）。京城（現在のソウル）に朝鮮総督府を置き、植民地支配を行いました。" },
+      { year: 1911, event: "関税自主権の回復（条約改正完了）", era: "modern", hint: "「行く（19）い（1）い（1）関係、小村寿太郎が不平等条約を完全改正」", desc: "外相の小村寿太郎がアメリカ等との交渉に成功し、関税自主権（関税の割合を自分で決める権利）を取り戻しました。これによって、幕末からの不平等条約が完全に解消されました。" },
+      { year: 1912, event: "中華民国の成立 / 大正元年", era: "modern", hint: "「行く（19）い（1）に（2）従い、孫文によるアジア初の共和国誕生」", desc: "辛亥（しんがい）革命によって清が滅亡し、孫文（そんぶん）を臨時大総統とする「中華民国」が成立。同年、明治天皇が逝去し、元号が「大正」へと改められました。" },
+      { year: 1914, event: "第一次世界大戦", era: "modern", hint: "「行く（19）い（1）よ（4）いよ勃発、ヨーロッパ発の最大の世界戦」", desc: "サラエボ事件を契機に、ヨーロッパの同盟国と協商国の間で勃発。日本は日英同盟を理由に参戦し、中国のドイツ領などを攻撃・占領しました。" },
+      { year: 1915, event: "対華二十一ヶ条の要求", era: "modern", hint: "「行く（19）い（1）ご（5）ねる、袁世凱政府への無理難題」", desc: "日本が大戦中のどさくさに紛れ、中国の袁世凱（えんせいがい）政府に突きつけた過酷な要求。山東省の旧ドイツ権益の引き継ぎなどを強要し、中国側の反日感情を高めました。" },
+      { year: 1917, event: "ロシア革命", era: "modern", hint: "「行く（19）い（1）な（7）ずま、レーニンの指導による社会主義革命」", desc: "大戦による困窮と専制政治に不満を持ったロシアの労働者たちが、レーニンの指導のもと世界初の社会主義革命を起こし、帝政ロシアが崩壊しました。" },
+      { year: 1918, event: "米騒動", era: "modern", hint: "「行く（19）い（1）っぱ（8）いのシベリア出兵見越した米買占めへの抗議」", desc: "ロシア革命を干渉する「シベリア出兵」を見越した商人が米を買い占め、価格が高騰。富山県の漁村の主婦たちから始まった買い占め抗議は、全国的な大暴動へ発展しました。" },
+      { year: 1919, event: "三・一独立運動 / 五四運動 / ベルサイユ条約", era: "modern", hint: "「行く（19）い（1）く（9）ベルサイユ、アジアでも独立を求める運動拡大」", desc: "パリ平和会議が開催され、ドイツとベルサイユ条約を締結。同じ頃、日本の植民地支配に抵抗する朝鮮の「三・一独立運動」、中国での反日抗議である「五四運動」が起きました。" },
+      { year: 1920, event: "国際連盟設立", era: "modern", hint: "「行く（19）に（2）お（0）う国際連盟、平和維持の初の国際組織」", desc: "アメリカ大統領ウィルソンの提案でスイスのジュネーブに本部を置く世界初の平和維持機関が設立。日本は発足時から常任理事国を務めました（アメリカは不参加）。" },
+      { year: 1921, event: "ワシントン平和会議", era: "modern", hint: "「行く（19）に（2）い（1）ち早く、海軍主力艦の比率軍縮決定」", desc: "アメリカの呼びかけで行われた軍縮会議。日英同盟の破棄、中国の主権尊重、さらに日・米・英の主力艦の保有比率（5：5：3）などが定められました。" },
+      { year: 1922, event: "全国水平社創立 / ソ連の成立", era: "modern", hint: "「行く（19）に（2）に（2）じゅうまる、被差別部落の解放宣言」", desc: "京都で被差別部落の人々が集まり、差別の解消と人権確立を目指して「全国水平社」を創立しました。また、ロシア革命を経て、世界初の社会主義国家「ソ連」が結成されました。" },
+      { year: 1923, event: "関東大震災", era: "modern", hint: "「行く（19）に（2）惨（3）劇、首都圏を襲った巨大大地震」", desc: "9月1日、関東地方をマグニチュード7.9の激震が直撃。木造家屋の密集や昼食時間帯が重なったことで未曾有の大火災が発生し、約10万人が死亡・行方不明となりました。" },
+      { year: 1925, event: "ラジオ放送開始 / 治安維持法 / 普通選挙法", era: "modern", hint: "「行く（19）に（2）ご（5）うのラジオ、アメとムチの二大法律」", desc: "男子に納税条件なしで選挙権を与える「普通選挙法」を可決した一方、社会主義を取り締まる「治安維持法」をセットで制定（アメとムチ）。ラジオの全国放送も開始されました。" },
+      { year: 1926, event: "昭和元年", era: "contemporary", hint: "「行く（19）つ（2）む（6）昭和のはじまり、激動期の幕開け」", desc: "大正天皇が崩御され、昭和天皇が即位。「昭和」への改元が行われました。ここから世界恐慌や戦争へと進む、日本の最も激動の時代が始まります。" },
+      { year: 1929, event: "世界恐慌", era: "contemporary", hint: "「行く（19）肉（29）食えない世界恐慌、NYの株価大暴落」", desc: "ニューヨークのウォール街での株価大暴落から始まり、世界的な大不況に発展。アメリカはニューディール政策、英仏はブロック経済を採用しました。" },
+      { year: 1931, event: "満州事変", era: "contemporary", hint: "「戦（193）い（1）の始まり、柳条湖事件による満州占領」", desc: "南満州鉄道の線路が爆破された「柳条湖（りゅうじょうこ）事件」を機に、関東軍（現地日本軍）が独断で軍事行動を開始し、満州全土をまたたく間に占領しました。" },
+      { year: 1932, event: "満州国建国 / 五・一五事件", era: "contemporary", hint: "「戦（193）に（2）向かう軍部、首相殺害で政党政治終焉」", desc: "清最後の皇帝・溥儀（ふぎ）を執政に迎え「満州国」の建国を宣言。同年に海軍青年将校らが犬養毅（いぬかいつよし）首相を暗殺し、大正から続いた政党内閣が終わりました。" },
+      { year: 1933, event: "国際連盟脱退", era: "contemporary", hint: "「戦（193）さ（3）よなら国際連盟、松岡洋右の退場」", desc: "連盟のリットン調査団が日本の満州占領を不当とする勧告を42対1で可決したため、日本代表の松岡洋右（まつおかようすけ）らが退場し、国際連盟からの脱退を通告しました。" },
+      { year: 1936, event: "二・二六事件", era: "contemporary", hint: "「いく（19）さ（3）む（6）なしい、陸軍青年将校らの急進クーデター失敗」", desc: "陸軍の急進派（皇道派）の青年将校らが兵を率いて大臣たちを襲撃し、東京の中心部を占拠。高橋是清蔵相らが暗殺されましたが、天皇の命令により鎮圧されました。" },
+      { year: 1937, event: "日中戦争", era: "contemporary", hint: "「いく（19）さ（3）な（7）みだの日中開戦、盧溝橋の銃声」", desc: "北京郊外の盧溝橋（ろこうきょう）での日中両軍の衝突をきっかけに、宣戦布告のないまま全面的な「日中戦争」に突入。中国国民党・共産党が協力して対抗しました。" },
+      { year: 1938, event: "国家総動員法", era: "contemporary", hint: "「いく（19）さ（3）パ（8）パも資材も国が強制動員」", desc: "長引く戦争に備えるため、議会の承認を経ずに政府の命令だけで人（労働力）や物資、資金をすべて戦争遂行に動員できるようにした法律です。" },
+      { year: 1939, event: "第二次世界大戦", era: "contemporary", hint: "「戦（193）き（9）の世界大戦再び、ドイツのポーランド侵攻」", desc: "ヒトラー率いるナチス・ドイツがポーランドに不法侵入したことで、英仏が宣戦。ヨーロッパを主戦場とする大規模な第二次世界大戦が勃発しました。" },
+      { year: 1940, event: "日独伊三国同盟", era: "contemporary", hint: "「行く（19）よ（4）お（0）日独伊、ファシズム枢軸国の結束」", desc: "日本、ドイツ、イタリアの3国が、米国の参戦をけん制するために結んだ軍事同盟。この条約の締結により、日本と欧米民主主義国との対立が決定的になりました。" },
+      { year: 1941, event: "日ソ中立条約 / 太平洋戦争", era: "contemporary", hint: "「行く（19）よ（4）い（1）よいよ、真珠湾攻撃による対米開戦」", desc: "ソ連との国境の安全を確保した日本は、12月8日にハワイの真珠湾を奇襲攻撃し、同時にマレー半島に上陸。「太平洋戦争（大東亜戦争）」に突入しました。" },
+      { year: 1945, event: "ポツダム宣言の受諾", era: "contemporary", hint: "「行く（19）よ（4）ご（5）苦労、広島・長崎の原爆投下と無条件降伏」", desc: "広島と長崎への原子爆弾投下、さらにソ連の参戦を受け、昭和天皇が聖断をくだしてポツダム宣言の無条件受諾を決定。8月15日にラジオで終戦を放送しました。" },
+      { year: 1946, event: "日本国憲法の公布", era: "contemporary", hint: "「行く（19）よ（4）む（6）なしくない、国権発動・戦争放棄の新憲法発表」", desc: "GHQ（マッカーサー総司令部）の強い主導のもと、主権在民・平和主義・基本的人権の尊重を三本柱とする「日本国憲法」が11月3日に公布されました。" },
+      { year: 1947, event: "日本国憲法の施行", era: "contemporary", hint: "「行く（19）よ（4）な（7）お良い、5月3日憲法記念日のスタート」", desc: "公布された「日本国憲法」が5月3日に施行。これに合わせて「教育基本法」や「地方自治法」、「労働基準法」などの重要な法律も整備されました。" },
+      { year: 1950, event: "朝鮮戦争 / 警察予備隊の設置", era: "contemporary", hint: "「行く（19）ご（5）お（0）朝鮮半島分断による開戦と再軍備」", desc: "朝鮮半島が北緯38度線を挟んで南北に分裂し激突。日本の占領軍（在日米軍）が朝鮮に出動したため、国内の治安維持のために現在の自衛隊の前身である「警察予備隊」が結成されました。" },
+      { year: 1951, event: "サンフランシスコ平和条約 / 日米安全保障条約", era: "contemporary", hint: "「行く（19）ご（5）い（1）っしょに西側諸国と和平、安保体制へ」", desc: "吉田茂首相がサンフランシスコにて48か国との間で平和条約に調印し、独立（主権）を回復。同時に、アメリカ軍の国内駐留を認める「日米安全保障条約」に署名しました。" },
+      { year: 1954, event: "第五福竜丸事件 / 自衛隊の発足", era: "contemporary", hint: "「行く（19）ご（5）よ（4）陸海空そろった自衛隊に改組」", desc: "ビキニ環礁の水爆実験で日本の漁船「第五福竜丸」が被爆。同年に「自衛隊法」が成立し、警察予備隊・保安隊から名実ともに「自衛隊」が発足しました。" },
+      { year: 1956, event: "日ソ共同宣言 / 国際連合に加盟", era: "contemporary", hint: "「行く（19）ご（5）む（6）国連、ソ連との国交正常化で道が開かれる」", desc: "鳩山一郎首相がモスクワに渡りソ連との戦争状態の終了を宣言。ソ連の反対がなくなったことで、日本はついに「国際連合（国連）」への加盟を果たしました。" },
+      { year: 1960, event: "新日米安全保障条約 / 国民所得倍増計画", era: "contemporary", hint: "「行く（19）む（6）お（0）安保、猛烈なデモの中で改定強行」", desc: "岸信介内閣が、日米の共同防衛義務などを定めた新しい「日米安保条約」を強行改定。これに不満を持った数十万人の国民による「安保闘争（デモ）」が起こりました。" },
+      { year: 1964, event: "東海道新幹線の開業 / 東京オリンピック", era: "contemporary", hint: "「行く（19）む（6）よ（4）オリンピック東京、復興の象徴」", desc: "アジアで最初の夏季オリンピックが東京で開催され、それに合わせ世界初の高速鉄道である「東海道新幹線」が東京・新大阪間で開業しました。" },
+      { year: 1965, event: "日韓基本条約", era: "contemporary", hint: "「行く（19）む（6）ご（5）日韓基本条約、国交回復と巨額資金提供」", desc: "佐藤栄作首相のもと、韓国（大韓民国）との国交を正常化させる条約。日本は経済支援を行い、対して韓国は過去の請求権問題解決に合意しました。" },
+      { year: 1967, event: "公害対策基本法", era: "contemporary", hint: "「行く（19）む（6）な（7）公害、高度成長の負の遺産への一歩」", desc: "高度経済成長の影で四大公害病（水俣病など）が猛威を振るい、国が公害を抑制するために初めて統合的な法律「公害対策基本法」を制定しました。" },
+      { year: 1971, event: "環境庁（現・環境省）設置", era: "contemporary", hint: "「行く（19）な（7）い（1）環境保護、省庁の新設」", desc: "公害対策基本法の制定などに伴い、公害や環境保護行政を一元的に推進するため、国の行政機関として「環境庁（現・環境省）」が発足しました。" },
+      { year: 1972, event: "沖縄の本土復帰 / 日中共同声明", era: "contemporary", hint: "「行く（19）な（7）に（2）もかも沖縄復帰と日中国交正常化」", desc: "佐藤栄作首相の執念の実り、戦後アメリカの施政権下にあった沖縄が日本に返還。同年、田中角栄首相が北京を訪問し「日中共同声明」に署名、国交を正常化しました。" },
+      { year: 1973, event: "第一次石油危機", era: "contemporary", hint: "「行く（19）な（7）み（3）だのオイルショック、トイレットペーパー騒動」", desc: "第四次中東戦争をきっかけに中東の産油国が原油価格を引き上げたため、世界的な「オイルショック」が発生。戦後の高度経済成長期がこれで終結しました。" },
+      { year: 1978, event: "日中平和友好条約", era: "contemporary", hint: "「行く（19）な（7）パ（8）平和条約締結、北京で調印」", desc: "福田赳夫内閣のもと、国交を正常化していた中国との間で、友好・不可侵・覇権主義への反対などを確認する正式な「平和友好条約」を結びました。" },
+      { year: 1989, event: "平成元年 / 消費税導入 / マルタ会談（冷戦終結）", era: "contemporary", hint: "「行く（19）パ（8）く（9）平成、3%消費税と冷戦の壁が崩れる」", desc: "昭和天皇が崩御され、元号が「平成」に。日本初の「消費税（3%）」が導入。同年末、米ソ首長がマルタ島で会談し、米ソ冷戦の終結（壁崩壊）を宣言しました。" },
+      { year: 1991, event: "牛肉・オレンジの輸入自由化 / ソ連の解体", era: "contemporary", hint: "「行く（19）く（9）い（1）ソ連、市場開放と超大国の崩壊」", desc: "アメリカなどの強い要求を受け、牛肉とオレンジの輸入を完全に自由化。同年12月、ゴルバチョフ大統領の辞任に伴い、半世紀続いた社会主義大国「ソ連」が崩壊しました。" },
+      { year: 1992, event: "PKO協力法", era: "contemporary", hint: "「行く（19）国（92）PKO、自衛隊の海外派遣解禁」", desc: "湾岸戦争後の国際要請に応え、自衛隊が国連の「平和維持活動（PKO）」に協力するため、海外への派遣を可能にする法律を成立させ、カンボジアなどに派遣しました。" },
+      { year: 1993, event: "環境基本法", era: "contemporary", hint: "「行く（19）く（9）さ（3）環境基本法、公害対策から地球温暖化防止へ」", desc: "従来の公害対策基本法を廃止し、より地球規模の自然環境保全や地球温暖化防止などを視野に入れた総合的な「環境基本法」が制定されました。" },
+      { year: 1995, event: "阪神・淡路大震災", era: "contemporary", hint: "「行く（19）救（9）ご（5）救護に走る、大都市での激震災害」", desc: "1月17日、兵庫県南部を激しい直下型地震（マグニチュード7.3）が襲いました。高速道路の落下や神戸三宮などの倒壊、大火災により、約6400名が犠牲となりました。" },
+      { year: 2001, event: "アメリカ同時多発テロ", era: "contemporary", hint: "「に（2）お（0）お（0）いにショックい（1）ち早く、21世紀の最初の衝撃」", desc: "ニューヨークの世界貿易センタービルやペンタゴンに、ハイジャックされた旅客機4機が突入。これにより、アフガニスタン・イラクなどへの対テロ戦争が始まりました。" },
+      { year: 2011, event: "東日本大震災", era: "contemporary", hint: "「に（2）お（0）い（1）い（1）国に、未曾有の大津波と原発事故への対応」", desc: "3月11日、三陸沖を震源とするマグニチュード9.0の巨大地震が発生。巨大津波が東日本太平洋岸を襲い、福島第一原発事故が発生。約2万人の犠牲を出しました。" },
+      { year: 2019, event: "令和元年 / 消費税10%", era: "contemporary", hint: "「ついに令和、に（2）お（0）い（1）く（9）新しい風」", desc: "天皇陛下の譲位に伴い、皇太子さまが即位され、元号が「令和」へと改められました。同年の10月に消費税が10%（軽減税率導入）に引き上げられました。" }
+    ];
+
+    // --- 2. ご褒美（バッジ）データ ---
+    const rewardsData = [
+      { id: "gold", name: "黄金の勾玉", desc: "10問チャレンジを「15秒以内」に全問正解", timeLimit: 15 },
+      { id: "silver", name: "飛鳥の金印", desc: "10問チャレンジを「25秒以内」に全問正解", timeLimit: 25 },
+      { id: "bronze", name: "室町の小判", desc: "10問チャレンジを「45秒以内」に全問正解", timeLimit: 45 },
+      { id: "copper", name: "和同開珎", desc: "10問チャレンジで「全問正解」を達成", timeLimit: 9999 }
+    ];
+
+    // --- 3. アプリの状態 (State) ---
+    let appState = {
+      soundEnabled: true,
+      currentMode: '10sec', // '10sec' | 'weak'
+      activeQuestions: [],
+      currentQuestionIdx: 0,
+      correctCount: 0,
+      wrongQuestionsThisSession: [], // 今回のセッションで間違えた問題
+      weakQuestions: [], // にがてリスト (LocalStorageと同期)
+      startTime: 0,
+      elapsedTime: 0,
+      timerInterval: null,
+      historyBest: [], // 自己ベスト記録
+      unlockedRewards: [], // アンロック済みご褒美
+      isCorrectFlag: false, // 現在回答中か
+      quizDirection: "year", // "year" (出来事→年号) | "event" (年号→出来事) | "random" (ランダム)
+      quizType: "year" // 現在出題中の具体的な問題種別 "year" (年号当て) または "event" (出来事当て)
+    };
+
+    // --- 4. Web Audio API による効果音 ---
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (!appState.soundEnabled) return;
+      
+      // コンテキストのレジューム
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1); // A5
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.4);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.setValueAtTime(120, audioCtx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.3);
+      } else if (type === 'click') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.08);
+      } else if (type === 'fanfare') {
+        const now = audioCtx.currentTime;
+        const freqs = [523.25, 659.25, 783.99, 1046.50]; // C, E, G, C
+        freqs.forEach((f, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.frequency.setValueAtTime(f, now + i * 0.1);
+          g.gain.setValueAtTime(0.15, now + i * 0.1);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.1 + 0.5);
+          o.start(now + i * 0.1);
+          o.stop(now + i * 0.1 + 0.5);
+        });
+      }
+    }
+
+    // --- 5. DOM 要素の取得 ---
+    const mainHeader = document.getElementById("mainHeader");
+    const mainFooter = document.getElementById("mainFooter");
+
+    const screenMenu = document.getElementById("screenMenu");
+    const screenQuiz = document.getElementById("screenQuiz");
+    const screenResult = document.getElementById("screenResult");
+    const screenStudy = document.getElementById("screenStudy");
+    
+    const btnStart10 = document.getElementById("btnStart10");
+    const btnStartWeak = document.getElementById("btnStartWeak");
+    const btnStartStudy = document.getElementById("btnStartStudy");
+    const weakCountText = document.getElementById("weakCountText");
+    const weakBadge = document.getElementById("weakBadge");
+
+    const btnBackFromStudy = document.getElementById("btnBackFromStudy");
+    const cardsGrid = document.getElementById("cardsGrid");
+    const eraFilter = document.getElementById("eraFilter");
+    const cardSearchInput = document.getElementById("cardSearchInput");
+
+    const soundToggleBtn = document.getElementById("soundToggleBtn");
+    const soundOnIcon = document.getElementById("soundOnIcon");
+    const soundOffIcon = document.getElementById("soundOffIcon");
+
+    const showRewardsBtn = document.getElementById("showRewardsBtn");
+    const rewardsModal = document.getElementById("rewardsModal");
+    const btnCloseRewards = document.getElementById("btnCloseRewards");
+    const btnCloseRewardsFooter = document.getElementById("btnCloseRewardsFooter");
+    const rewardsList = document.getElementById("rewardsList");
+
+    const btnQuitQuiz = document.getElementById("btnQuitQuiz");
+    const quizModeBadge = document.getElementById("quizModeBadge");
+    const currentQuestionNum = document.getElementById("currentQuestionNum");
+    const totalQuestionNum = document.getElementById("totalQuestionNum");
+    const quizTimer = document.getElementById("quizTimer");
+    const quizProgressBar = document.getElementById("quizProgressBar");
+    const questionText = document.getElementById("questionText");
+    const quizTypeLabel = document.getElementById("quizTypeLabel");
+    const btnShowHint = document.getElementById("btnShowHint");
+    const hintText = document.getElementById("hintText");
+    const choicesGrid = document.getElementById("choicesGrid");
+
+    const answerOverlay = document.getElementById("answerOverlay");
+    const overlayCard = document.getElementById("overlayCard");
+    const feedbackIcon = document.getElementById("feedbackIcon");
+    const feedbackTitle = document.getElementById("feedbackTitle");
+    const feedbackDetail = document.getElementById("feedbackDetail");
+    const feedbackScrollContainer = document.getElementById("feedbackScrollContainer");
+    const btnNextQuestion = document.getElementById("btnNextQuestion");
+
+    const resultTitle = document.getElementById("resultTitle");
+    const resultSub = document.getElementById("resultSub");
+    const resultScore = document.getElementById("resultScore");
+    const resultTime = document.getElementById("resultTime");
+    const rewardUnlockArea = document.getElementById("rewardUnlockArea");
+    const unlockedRewardName = document.getElementById("unlockedRewardName");
+    const weakAddedGuide = document.getElementById("weakAddedGuide");
+    const addedWeakCount = document.getElementById("addedWeakCount");
+    const btnBackToMenu = document.getElementById("btnBackToMenu");
+    const btnRetryQuiz = document.getElementById("btnRetryQuiz");
+    const bestTimeContainer = document.getElementById("bestTimeContainer");
+
+    // 出題方向（UI選択中の一時ステート）
+    let selectedDir10 = "year";
+    let selectedDirWeak = "year";
+
+    // --- 6. LocalStorageの読み込み・保存 ---
+    function loadSavedData() {
+      const weak = localStorage.getItem("rekishi_weak_questions");
+      appState.weakQuestions = weak ? JSON.parse(weak) : [];
+      
+      const best = localStorage.getItem("rekishi_best_time");
+      appState.historyBest = best ? JSON.parse(best) : [];
+
+      const rewards = localStorage.getItem("rekishi_rewards");
+      appState.unlockedRewards = rewards ? JSON.parse(rewards) : [];
+
+      updateMenuState();
+    }
+
+    function saveWeakQuestions() {
+      localStorage.setItem("rekishi_weak_questions", JSON.stringify(appState.weakQuestions));
+      updateMenuState();
+    }
+
+    function saveBestTimeAndRewards() {
+      localStorage.setItem("rekishi_best_time", JSON.stringify(appState.historyBest));
+      localStorage.setItem("rekishi_rewards", JSON.stringify(appState.unlockedRewards));
+    }
+
+    function updateMenuState() {
+      const count = appState.weakQuestions.length;
+      weakCountText.innerText = `現在のにがて問題: ${count}問`;
+      if (count > 0) {
+        btnStartWeak.disabled = false;
+        weakBadge.classList.remove("hidden");
+      } else {
+        btnStartWeak.disabled = true;
+        weakBadge.classList.add("hidden");
+      }
+
+      if (appState.historyBest.length > 0) {
+        const sorted = [...appState.historyBest].sort((a, b) => a.time - b.time).slice(0, 3);
+        bestTimeContainer.innerHTML = sorted.map((item, idx) => {
+          const dateStr = new Date(item.date).toLocaleDateString();
+          const rankEmoji = idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉";
+          return `
+            <div class="flex justify-between items-center py-1 border-b border-dashed border-slate-100 last:border-0">
+              <span class="font-bold text-slate-700">${rankEmoji} 第${idx+1}位</span>
+              <span class="font-mono font-bold text-red-500">${formatTime(item.time)}</span>
+              <span class="text-xs text-slate-400">${dateStr}</span>
+            </div>
+          `;
+        }).join("");
+      } else {
+        bestTimeContainer.innerHTML = `<p class="text-xs text-slate-400">まだベストタイムがありません。10問チャレンジを全問正解して記録を作ろう！</p>`;
+      }
+    }
+
+    function formatTime(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const minutes = Math.floor(totalSec / 60);
+      const seconds = totalSec % 60;
+      const centiseconds = Math.floor((ms % 1000) / 10);
+      
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${pad(minutes)}:${pad(seconds)}.${pad(centiseconds)}`;
+    }
+
+
+    // --- 7. タイマー管理 ---
+    function startTimer() {
+      appState.startTime = performance.now();
+      appState.timerInterval = setInterval(() => {
+        const current = performance.now();
+        appState.elapsedTime = current - appState.startTime;
+        quizTimer.innerText = formatTime(appState.elapsedTime);
+      }, 50);
+    }
+
+    function stopTimer() {
+      clearInterval(appState.timerInterval);
+    }
+
+
+    // --- 8. 画面遷移ロジック ---
+    function showScreen(screen) {
+      playSound('click');
+      screenMenu.classList.add("hidden");
+      screenQuiz.classList.add("hidden");
+      screenResult.classList.add("hidden");
+      screenStudy.classList.add("hidden");
+
+      // クイズプレイ画面中のみ、メインヘッダー・フッターを消して一画面にすっきり収める
+      if (screen === screenQuiz) {
+        mainHeader.classList.add("hidden");
+        mainFooter.classList.add("hidden");
+      } else {
+        mainHeader.classList.remove("hidden");
+        mainFooter.classList.remove("hidden");
+      }
+
+      screen.classList.remove("hidden");
+      window.scrollTo(0, 0);
+    }
+
+
+    // --- 9. クイズ作成・実行 ---
+    function initQuiz(mode, direction) {
+      appState.currentMode = mode;
+      appState.quizDirection = direction || "year"; // "year" | "event" | "random"
+      appState.wrongQuestionsThisSession = [];
+      appState.currentQuestionIdx = 0;
+      appState.correctCount = 0;
+      appState.isCorrectFlag = false;
+
+      if (mode === '10sec') {
+        quizModeBadge.innerText = "10問チャレンジ";
+        quizModeBadge.className = "text-[10px] font-bold text-white bg-red-500 px-2 py-0.5 rounded-full";
+        const shuffled = [...historyData].sort(() => Math.random() - 0.5);
+        appState.activeQuestions = shuffled.slice(0, 10);
+      } else {
+        quizModeBadge.innerText = "にがて克服";
+        quizModeBadge.className = "text-[10px] font-bold text-white bg-indigo-600 px-2 py-0.5 rounded-full";
+        appState.activeQuestions = [...appState.weakQuestions].sort(() => Math.random() - 0.5);
+      }
+
+      totalQuestionNum.innerText = appState.activeQuestions.length;
+      showScreen(screenQuiz);
+      startTimer();
+      renderQuestion();
+    }
+
+    function renderQuestion() {
+      const currentQ = appState.activeQuestions[appState.currentQuestionIdx];
+      currentQuestionNum.innerText = appState.currentQuestionIdx + 1;
+      
+      const progressPercent = (appState.currentQuestionIdx / appState.activeQuestions.length) * 100;
+      quizProgressBar.style.width = `${progressPercent}%`;
+
+      hintText.classList.add("hidden");
+      hintText.innerText = currentQ.hint || "オリジナルの語呂合わせを作ってみよう！";
+      btnShowHint.classList.remove("hidden");
+
+      if (appState.quizDirection === "random") {
+        appState.quizType = Math.random() < 0.5 ? "year" : "event";
+      } else {
+        appState.quizType = appState.quizDirection;
+      }
+
+      if (appState.quizType === "year") {
+        quizTypeLabel.innerText = "年号を当てよう！";
+        questionText.innerHTML = `<span class="text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-lg mr-1 text-[10px]">出来事</span> <span class="text-sm md:text-base font-bold text-slate-700">${currentQ.event}</span>`;
+      } else {
+        quizTypeLabel.innerText = "出来事を当てよう！";
+        questionText.innerHTML = `<span class="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg mr-1 text-[10px]">西暦 ${currentQ.year}年</span><br class="md:hidden"/> <span class="text-sm md:text-base font-bold text-slate-700">に起こった出来事は？</span>`;
+      }
+
+      const choices = generateChoices(currentQ, appState.quizType);
+      choicesGrid.innerHTML = "";
+      
+      choices.forEach(choice => {
+        const btn = document.createElement("button");
+        // 高さ制限(min-h-[50px] max-h-[70px])をして、画面に綺麗に収める
+        btn.className = "bg-white border-2 border-slate-200 hover:border-amber-400 hover:bg-amber-50 text-slate-800 text-center font-bold px-3 py-2 rounded-xl shadow-xs transition-all bounce-active flex items-center justify-center text-xs md:text-sm min-h-[52px] max-h-[72px] overflow-hidden";
+        
+        let displayHtml = "";
+        if (appState.quizType === "year") {
+          displayHtml = `<span class="text-amber-600 font-mono text-base md:text-lg font-extrabold">${choice.year} 年</span>`;
+        } else {
+          displayHtml = `<span class="text-slate-700 text-center leading-tight line-clamp-2">${choice.event}</span>`;
+        }
+
+        btn.innerHTML = displayHtml;
+        btn.addEventListener("click", () => handleAnswer(choice, btn));
+        choicesGrid.appendChild(btn);
+      });
+    }
+
+    function generateChoices(correctQuestion, type) {
+      const candidates = [correctQuestion];
+      const sameEraData = historyData.filter(item => item.year !== correctQuestion.year && item.era === correctQuestion.era);
+      const generalData = historyData.filter(item => item.year !== correctQuestion.year);
+      
+      const pool = sameEraData.length >= 3 ? sameEraData : generalData;
+      const shuffledPool = [...pool].sort(() => Math.random() - 0.5);
+
+      for (let i = 0; i < 3; i++) {
+        if (shuffledPool[i]) {
+          candidates.push(shuffledPool[i]);
+        }
+      }
+
+      return candidates.sort(() => Math.random() - 0.5);
+    }
+
+    function handleAnswer(selectedChoice, selectedBtn) {
+      if (answerOverlay.classList.contains("hidden") === false) return;
+      
+      const currentQ = appState.activeQuestions[appState.currentQuestionIdx];
+      const isCorrect = selectedChoice.year === currentQ.year;
+
+      if (isCorrect) {
+        playSound('correct');
+        feedbackIcon.innerText = "⭕";
+        feedbackTitle.innerText = "正解！";
+        feedbackTitle.className = "text-xl font-bold text-emerald-600 mb-1";
+        appState.correctCount++;
+        selectedBtn.classList.remove("border-slate-200");
+        selectedBtn.classList.add("border-emerald-500", "bg-emerald-50", "text-emerald-950");
+      } else {
+        playSound('wrong');
+        feedbackIcon.innerText = "❌";
+        feedbackTitle.innerText = "ざんねん！";
+        feedbackTitle.className = "text-xl font-bold text-red-500 mb-1";
+        selectedBtn.classList.remove("border-slate-200");
+        selectedBtn.classList.add("border-red-400", "bg-red-50", "text-red-950", "shake");
+
+        if (!appState.weakQuestions.some(q => q.year === currentQ.year)) {
+          appState.weakQuestions.push(currentQ);
+        }
+        if (!appState.wrongQuestionsThisSession.some(q => q.year === currentQ.year)) {
+          appState.wrongQuestionsThisSession.push(currentQ);
+        }
+      }
+
+      // 【解説の充実化】 出来事の西暦、出来事名、語呂合わせ、ワンポイント解説を美しくカード化！
+      feedbackDetail.innerHTML = `
+        <div class="space-y-3">
+          <!-- 西暦と出来事のヘッダー -->
+          <div class="bg-gradient-to-r from-amber-500 to-red-500 text-white p-3 rounded-xl text-center shadow-xs">
+            <div class="font-mono text-2xl font-black tracking-wider">${currentQ.year} 年</div>
+            <div class="text-xs font-bold border-t border-white/30 pt-1 mt-1 leading-snug">${currentQ.event}</div>
+          </div>
+          
+          <!-- ごろ合わせ（暗記用） -->
+          <div class="bg-amber-50 p-3 rounded-xl border border-amber-200/60">
+            <span class="text-[10px] font-bold text-amber-800 bg-amber-200 px-2 py-0.5 rounded-full inline-block mb-1">💡 暗記のごろ合わせ</span>
+            <p class="text-xs md:text-sm font-bold text-amber-950 leading-relaxed">${currentQ.hint || "おぼえやすい語呂合わせを自分で考えてみよう！"}</p>
+          </div>
+
+          <!-- くわしい解説 -->
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200/60">
+            <span class="text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full inline-block mb-1">📖 受験重要ポイント</span>
+            <p class="text-xs text-slate-600 leading-relaxed text-justify">${currentQ.desc || "この出来事は、中学入試の歴史で非常に出題されやすい重要ポイントです。前後の歴史の流れとあわせて覚えておきましょう。"}</p>
+          </div>
+        </div>
+      `;
+
+      // にがて克服モードで正解した場合は、にがてリストから削除
+      if (appState.currentMode === 'weak' && isCorrect) {
+        appState.weakQuestions = appState.weakQuestions.filter(q => q.year !== currentQ.year);
+      }
+
+      // 解答オーバーレイを開く (スクロール位置を最上部に戻す)
+      feedbackScrollContainer.scrollTop = 0;
+      answerOverlay.classList.remove("hidden");
+      overlayCard.classList.remove("scale-95");
+      overlayCard.classList.add("scale-100");
+    }
+
+    btnNextQuestion.addEventListener("click", () => {
+      playSound('click');
+      answerOverlay.classList.add("hidden");
+      overlayCard.classList.add("scale-95");
+      overlayCard.classList.remove("scale-100");
+
+      appState.currentQuestionIdx++;
+      if (appState.currentQuestionIdx < appState.activeQuestions.length) {
+        renderQuestion();
+      } else {
+        finishQuiz();
+      }
+    });
+
+    function finishQuiz() {
+      stopTimer();
+      saveWeakQuestions();
+
+      resultScore.innerText = appState.correctCount;
+      resultTime.innerText = formatTime(appState.elapsedTime);
+
+      if (appState.currentMode === '10sec') {
+        resultTitle.innerText = appState.correctCount === 10 ? "🎉 全問正解！カンペキ！" : "💮 よくがんばりました！";
+        resultSub.innerText = "10問チャレンジ結果";
+        
+        if (appState.correctCount === 10) {
+          playSound('fanfare');
+          
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 }
+          });
+
+          const newRecord = {
+            time: appState.elapsedTime,
+            date: Date.now()
+          };
+          appState.historyBest.push(newRecord);
+
+          let unlockedThisTime = null;
+          const seconds = appState.elapsedTime / 1000;
+          
+          for (const reward of rewardsData) {
+            if (seconds <= reward.timeLimit) {
+              if (!appState.unlockedRewards.includes(reward.id)) {
+                appState.unlockedRewards.push(reward.id);
+                unlockedThisTime = reward;
+                break;
+              }
+            }
+          }
+
+          if (!unlockedThisTime && !appState.unlockedRewards.includes("copper")) {
+            appState.unlockedRewards.push("copper");
+            unlockedThisTime = rewardsData.find(r => r.id === "copper");
+          }
+
+          saveBestTimeAndRewards();
+
+          if (unlockedThisTime) {
+            rewardUnlockArea.classList.remove("hidden");
+            unlockedRewardName.innerText = unlockedThisTime.name;
+          } else {
+            rewardUnlockArea.classList.add("hidden");
+          }
+        } else {
+          rewardUnlockArea.classList.add("hidden");
+        }
+      } else {
+        resultTitle.innerText = "✨ にがて克服ミッション完了！";
+        resultSub.innerText = "にがて克服モード結果";
+        rewardUnlockArea.classList.add("hidden");
+      }
+
+      if (appState.wrongQuestionsThisSession.length > 0) {
+        weakAddedGuide.classList.remove("hidden");
+        addedWeakCount.innerText = appState.wrongQuestionsThisSession.length;
+      } else {
+        weakAddedGuide.classList.add("hidden");
+      }
+
+      updateMenuState();
+      showScreen(screenResult);
+    }
+
+
+    // --- 10. 暗記カード（一覧・くわしい解説を追加）の描画 ---
+    function renderStudyCards() {
+      const era = eraFilter.value;
+      const search = cardSearchInput.value.trim().toLowerCase();
+
+      const filtered = historyData.filter(item => {
+        const eraMatch = era === "all" || item.era === era;
+        const searchMatch = !search || 
+          item.event.toLowerCase().includes(search) || 
+          String(item.year).includes(search);
+        return eraMatch && searchMatch;
+      });
+
+      cardsGrid.innerHTML = "";
+
+      if (filtered.length === 0) {
+        cardsGrid.innerHTML = `
+          <div class="col-span-full text-center py-12 text-slate-400">
+            該当する年号が見つかりませんでした。違う条件で探してみてください！
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isWeak = appState.weakQuestions.some(wq => wq.year === item.year);
+        
+        const card = document.createElement("div");
+        card.className = "bg-white rounded-2xl p-4 border border-amber-100 shadow-xs hover:shadow-sm transition-all flex flex-col justify-between group";
+        
+        card.innerHTML = `
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <span class="font-mono text-2xl font-extrabold text-red-500">${item.year}<span class="text-xs font-normal text-slate-400 ml-1">年</span></span>
+              <button class="weak-toggle-btn text-lg p-1 hover:scale-110 transition-transform" data-year="${item.year}" title="にがてマークの切り替え">
+                ${isWeak ? "⭐️" : "☆"}
+              </button>
+            </div>
+            <p class="text-sm font-bold text-slate-800 leading-relaxed group-hover:text-red-600 transition-colors">${item.event}</p>
+          </div>
+          
+          <!-- 折りたたみの詳細解説＆語呂合わせエリア -->
+          <div class="mt-3 pt-3 border-t border-dashed border-slate-100 flex justify-between items-center">
+            <span class="text-[9px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">${getEraLabel(item.era)}</span>
+            <button class="show-card-hint text-xs text-amber-600 hover:text-amber-800 font-bold flex items-center gap-1">
+              💡 解説＆おぼえ方
+            </button>
+          </div>
+          <div class="card-hint-area mt-2 space-y-2 hidden">
+            <p class="text-xs text-amber-700 bg-amber-50/70 p-2 rounded-lg border border-dashed border-amber-200">
+              <span class="font-bold text-[10px] block text-amber-800 mb-0.5">【おぼえ方】</span>
+              ${item.hint || "オリジナルの語呂合わせを作ってみよう！"}
+            </p>
+            <p class="text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg border border-slate-200">
+              <span class="font-bold text-[10px] block text-slate-700 mb-0.5">【解説】</span>
+              ${item.desc || "この時期の最重要トピックです。背景も含めてインプットしましょう。"}
+            </p>
+          </div>
+        `;
+
+        card.querySelector(".weak-toggle-btn").addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleWeakInCard(item, e.currentTarget);
+        });
+
+        card.querySelector(".show-card-hint").addEventListener("click", (e) => {
+          const hintArea = card.querySelector(".card-hint-area");
+          hintArea.classList.toggle("hidden");
+          playSound('click');
+        });
+
+        cardsGrid.appendChild(card);
+      });
+    }
+
+    function getEraLabel(era) {
+      switch(era) {
+        case "ancient": return "古代（〜平安）";
+        case "medieval": return "中世（鎌倉・室町）";
+        case "pre-modern": return "近世（安土桃山・江戸）";
+        case "modern": return "近代（明治・大正）";
+        case "contemporary": return "現代（昭和〜）";
+        default: return "歴史";
+      }
+    }
+
+    function toggleWeakInCard(item, btn) {
+      playSound('click');
+      const isWeak = appState.weakQuestions.some(wq => wq.year === item.year);
+      if (isWeak) {
+        appState.weakQuestions = appState.weakQuestions.filter(wq => wq.year !== item.year);
+        btn.innerText = "☆";
+      } else {
+        appState.weakQuestions.push(item);
+        btn.innerText = "⭐️";
+      }
+      saveWeakQuestions();
+    }
+
+
+    // --- 11. ご褒美モーダル表示 ---
+    function renderRewardsModal() {
+      rewardsList.innerHTML = "";
+      
+      rewardsData.forEach(reward => {
+        const isUnlocked = appState.unlockedRewards.includes(reward.id);
+        const itemDiv = document.createElement("div");
+        itemDiv.className = `flex items-center gap-4 p-4 rounded-2xl border ${isUnlocked ? 'bg-amber-50/50 border-amber-200' : 'bg-slate-50 border-slate-100 opacity-60'}`;
+        
+        const badgeIcon = reward.id === "gold" ? "🥇" : reward.id === "silver" ? "🥈" : reward.id === "bronze" ? "🥉" : "🪙";
+        
+        itemDiv.innerHTML = `
+          <div class="text-3xl">${isUnlocked ? badgeIcon : "🔒"}</div>
+          <div class="flex-grow">
+            <h4 class="font-bold text-sm ${isUnlocked ? 'text-slate-800' : 'text-slate-400'}">${isUnlocked ? reward.name : "未獲得のお宝"}</h4>
+            <p class="text-xs text-slate-500">${reward.desc}</p>
+          </div>
+          ${isUnlocked ? '<span class="text-xs font-bold text-amber-600 bg-amber-100 px-2 py-0.5 rounded-full">獲得済み</span>' : ''}
+        `;
+        rewardsList.appendChild(itemDiv);
+      });
+
+      rewardsModal.classList.remove("hidden");
+    }
+
+
+    // --- 12. イベントリスナーの設定 ---
+    
+    // 出題形式選択（10問チャレンジ）
+    const dirBtns10 = document.querySelectorAll(".quiz-dir-btn-10");
+    dirBtns10.forEach(btn => {
+      btn.addEventListener("click", () => {
+        playSound('click');
+        dirBtns10.forEach(b => {
+          b.classList.remove("active", "bg-white", "text-slate-800", "shadow-xs");
+          b.classList.add("text-slate-500");
+        });
+        btn.classList.add("active", "bg-white", "text-slate-800", "shadow-xs");
+        btn.classList.remove("text-slate-500");
+        selectedDir10 = btn.getAttribute("data-dir");
+      });
+    });
+
+    // 出題形式選択（にがて克服）
+    const dirBtnsWeak = document.querySelectorAll(".quiz-dir-btn-weak");
+    dirBtnsWeak.forEach(btn => {
+      btn.addEventListener("click", () => {
+        playSound('click');
+        dirBtnsWeak.forEach(b => {
+          b.classList.remove("active", "bg-white", "text-slate-800", "shadow-xs");
+          b.classList.add("text-slate-500");
+        });
+        btn.classList.add("active", "bg-white", "text-slate-800", "shadow-xs");
+        btn.classList.remove("text-slate-500");
+        selectedDirWeak = btn.getAttribute("data-dir");
+      });
+    });
+
+    // クイズ開始ボタン
+    btnStart10.addEventListener("click", () => initQuiz('10sec', selectedDir10));
+    btnStartWeak.addEventListener("click", () => {
+      if (appState.weakQuestions.length > 0) {
+        initQuiz('weak', selectedDirWeak);
+      }
+    });
+
+    // 途中でやめるボタン
+    btnQuitQuiz.addEventListener("click", () => {
+      if (confirm("クイズを途中で終了してメニューに戻りますか？（現在の進捗は保存されません）")) {
+        stopTimer();
+        showScreen(screenMenu);
+      }
+    });
+
+    // 暗記カード
+    btnStartStudy.addEventListener("click", () => {
+      showScreen(screenStudy);
+      renderStudyCards();
+    });
+    btnBackFromStudy.addEventListener("click", () => showScreen(screenMenu));
+    eraFilter.addEventListener("change", renderStudyCards);
+    cardSearchInput.addEventListener("input", renderStudyCards);
+
+    // ヒントボタン
+    btnShowHint.addEventListener("click", () => {
+      playSound('click');
+      hintText.classList.toggle("hidden");
+    });
+
+    // 結果画面から戻る
+    btnBackToMenu.addEventListener("click", () => showScreen(screenMenu));
+    btnRetryQuiz.addEventListener("click", () => initQuiz(appState.currentMode, appState.quizDirection));
+
+    // 音量切り替え
+    soundToggleBtn.addEventListener("click", () => {
+      appState.soundEnabled = !appState.soundEnabled;
+      if (appState.soundEnabled) {
+        soundOnIcon.classList.remove("hidden");
+        soundOffIcon.classList.add("hidden");
+        playSound('click');
+      } else {
+        soundOnIcon.classList.add("hidden");
+        soundOffIcon.classList.remove("hidden");
+      }
+    });
+
+    // ごほうびモーダル
+    showRewardsBtn.addEventListener("click", () => {
+      playSound('click');
+      renderRewardsModal();
+    });
+    btnCloseRewards.addEventListener("click", () => {
+      playSound('click');
+      rewardsModal.classList.add("hidden");
+    });
+    btnCloseRewardsFooter.addEventListener("click", () => {
+      playSound('click');
+      rewardsModal.classList.add("hidden");
+    });
+
+    // 初期起動
+    window.onload = function() {
+      loadSavedData();
+      showScreen(screenMenu);
+    };
+  </script>
+</body>
+</html>
